@@ -16,6 +16,7 @@ parserOptions:
   sourceType: module
 plugins:
   - react
+ignorePatterns: "**/*.bs.js"
 rules: {}
 settings:
   react:
