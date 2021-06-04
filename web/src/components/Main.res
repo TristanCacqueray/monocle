@@ -2,12 +2,28 @@ open Prelude
 
 module ChangePage = {
   @react.component
-  let make = (~store: Store.t) =>
-    switch Store.Fetch.changeReviewStats(store) {
+  let make = (~store: Store.t) => {
+    let (state, _) = store
+    switch LegacyStore.ChangesReviewStats.fetch(
+      LegacyWebApi.Query.mkQueryParams(
+        "changes_review_stats",
+        "changes_review_stats",
+        false,
+        false,
+        state.legacyQuery,
+        state.index,
+        0,
+        10,
+      ),
+      store,
+    ) {
     | Some(Ok(data)) =>
-      <div className="container"> <LegacyWebApi.ChangesReviewStats.View data /> </div>
+      <div className="container">
+        <FiltersForm store showChangeParams={false} /> <LegacyWebApi.ChangesReviewStats.View data />
+      </div>
     | _ => <Spinner />
     }
+  }
 }
 
 module Main = {
@@ -64,8 +80,9 @@ module Main = {
                 indice->Store.Store.SetIndex->dispatch
               }}
             />
-          | list{index} => <ChangePage store />
-          | list{index, _} => <p> {("index: " ++ index)->str} </p>
+          | list{_index} => <ChangePage store />
+          | list{_index, "board"} => <Board store />
+          | list{_index, _} => <p> {("index: " ++ state.index)->str} </p>
           | _ => <p> {"Not found"->str} </p>
           }
         }

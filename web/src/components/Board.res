@@ -263,9 +263,7 @@ module Board = {
 }
 
 @react.component
-let make = (~index: string) => {
-  // TODO: move the store to the main App
-  let store = Store.use(index)
+let make = (~store: Store.t) => {
   let (state, _) = store
 
   // Load from url and store the column state
@@ -280,7 +278,7 @@ let make = (~index: string) => {
       {columns
       ->Belt.Array.mapWithIndex((pos, column) =>
         <Patternfly.Layout.SplitItem key={column.name ++ string_of_int(pos)}>
-          <Column index column query={state.query} />
+          <Column index={state.index} column query={state.query} />
         </Patternfly.Layout.SplitItem>
       )
       ->React.array}

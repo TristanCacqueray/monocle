@@ -24,6 +24,7 @@ module Store = {
   type t = {
     index: string,
     query: string,
+    legacyQuery: string,
     suggestions: suggestionsR,
     fields: RemoteData.t<list<SearchTypes.field>>,
     changesReviewStats: changesReviewStatsR,
@@ -31,6 +32,7 @@ module Store = {
   type action =
     | SetIndex(string)
     | SetQuery(string)
+    | SetLegacyQuery(string)
     | FetchFields(fieldsRespR)
     | FetchSuggestions(suggestionsR)
     | FetchChangesReviewStats(changesReviewStatsR)
@@ -48,6 +50,7 @@ module Store = {
         Prelude.setLocationSearch("q", query)->ignore
         {...state, query: query}
       }
+    | SetLegacyQuery(legacyQuery) => {...state, legacyQuery: legacyQuery, changesReviewStats: None}
     | FetchFields(res) => {...state, fields: res->RemoteData.fmap(resp => resp.fields)}
     | FetchSuggestions(res) => {...state, suggestions: res}
     | FetchChangesReviewStats(res) => {...state, changesReviewStats: res}
@@ -57,6 +60,7 @@ module Store = {
   let create = index => {
     index: index,
     query: UrlData.getQuery(),
+    legacyQuery: "",
     suggestions: None,
     fields: None,
     changesReviewStats: None,
@@ -67,6 +71,7 @@ module Fetch = {
   // Helper module to abstract the WebApi
   open WebApi
   let fetch = (
+    query: 'q,
     value: RemoteData.t<'r>,
     get: unit => axios<'a>,
     mkAction: RemoteData.t<'a> => Store.action,
@@ -79,19 +84,20 @@ module Fetch = {
     }
     let handleOk = resp => resp.data->Ok->set
     // Effect0 is performed when the component is monted
-    React.useEffect0(() => {
+    React.useEffect1(() => {
       // We fetch the remote data only when needed
       switch value {
       | None => (get() |> Js.Promise.then_(handleOk) |> Js.Promise.catch(handleErr))->ignore
       | _ => ignore()
       }
       None
-    })
+    }, [query])
     value
   }
 
   let suggestions = ((state: Store.t, dispatch)) =>
     fetch(
+      state.index,
       state.suggestions,
       () => WebApi.Search.suggestions({SearchTypes.index: state.index}),
       res => Store.FetchSuggestions(res),
@@ -100,18 +106,10 @@ module Fetch = {
 
   let fields = ((state: Store.t, dispatch)) => {
     fetch(
+      None,
       state.fields,
       () => WebApi.Search.fields({version: "1"}),
       res => Store.FetchFields(res),
-      dispatch,
-    )
-  }
-
-  let changeReviewStats = ((state: Store.t, dispatch)) => {
-    fetch(
-      state.changesReviewStats,
-      () => LegacyWebApi.ChangesReviewStats.get(state.index),
-      res => Store.FetchChangesReviewStats(res),
       dispatch,
     )
   }

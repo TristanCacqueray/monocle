@@ -280,78 +280,102 @@ class BaseQueryComponent extends React.Component {
     obj.queryBackend(pageData.selected)
   }
 
-  getFinalChangeState(params) {
-    const state = params.get('state')
-    let ret = state
-    switch (state) {
-      case 'SELF-MERGED':
-        ret = 'MERGED'
-        break
-      default:
-    }
-    return ret
-  }
-
   queryBackend(start = 0) {
-    const params = new URL(window.location.href).searchParams
     this.setState({ state: params.get('state') })
-    let queryParams = {}
-    // if we have a changeIds, don't pass other non mandatory filters
-    let gte = params.get('gte')
-    let lte = params.get('lte')
-    if (params.get('relativedate')) {
-      gte = RelativeDate.strToDateString(params.get('relativedate'))
-      lte = undefined
+    this.props.handleQuery(
+      mkQueryParams(
+        this.state.name,
+        this.state.graph_type,
+        this.props.changeIds,
+        this.state.forceAllAuthors,
+        new URL(window.location.href).search,
+        this.props.index,
+        start,
+        this.state.pageSize
+      )
+    )
+  }
+}
+
+const getFinalChangeState = (params) => {
+  const state = params.get('state')
+  let ret = state
+  switch (state) {
+    case 'SELF-MERGED':
+      ret = 'MERGED'
+      break
+    default:
+  }
+  return ret
+}
+
+const mkQueryParams = (
+  name,
+  graphType,
+  changeIds,
+  forceAllAuthors,
+  paramsStr,
+  index,
+  start,
+  pageSize
+) => {
+  const params = new URLSearchParams(paramsStr)
+  let queryParams = {}
+  // if we have a changeIds, don't pass other non mandatory filters
+  let gte = params.get('gte')
+  let lte = params.get('lte')
+  if (params.get('relativedate')) {
+    gte = RelativeDate.strToDateString(params.get('relativedate'))
+    lte = undefined
+  }
+  if (changeIds) {
+    queryParams = {
+      index: index,
+      name: name,
+      graph_type: graphType,
+      repository: params.get('repository') || '.*',
+      branch: params.get('branch'),
+      gte: gte,
+      changeIds: changeIds
     }
-    if (this.props.changeIds) {
+  } else {
+    queryParams = {
+      index: index,
+      name: name,
+      repository: params.get('repository') || '.*',
+      branch: params.get('branch'),
+      files: params.get('files'),
+      gte: gte,
+      lte: lte,
+      excludeAuthors: params.get('exclude_authors'),
+      task_priority: params.get('task_priority'),
+      task_severity: params.get('task_severity'),
+      task_type: params.get('task_type'),
+      task_score: params.get('task_score'),
+      project: params.get('project'),
+      authors: forceAllAuthors ? null : params.get('authors'),
+      graph_type: graphType,
+      from: start * pageSize,
+      size: pageSize
+    }
+    if (
+      ['last_changes', 'repos_top', 'authors_top', 'approvals_top'].includes(
+        name
+      )
+    ) {
+      // Merge both associative arrays
       queryParams = {
-        index: this.props.index,
-        name: this.state.name,
-        graph_type: this.state.graph_type,
-        repository: params.get('repository') || '.*',
-        branch: params.get('branch'),
-        gte: gte,
-        changeIds: this.props.changeIds
-      }
-    } else {
-      queryParams = {
-        index: this.props.index,
-        name: this.state.name,
-        repository: params.get('repository') || '.*',
-        branch: params.get('branch'),
-        files: params.get('files'),
-        gte: gte,
-        lte: lte,
-        excludeAuthors: params.get('exclude_authors'),
-        task_priority: params.get('task_priority'),
-        task_severity: params.get('task_severity'),
-        task_type: params.get('task_type'),
-        task_score: params.get('task_score'),
-        project: params.get('project'),
-        authors: this.state.forceAllAuthors ? null : params.get('authors'),
-        graph_type: this.state.graph_type,
-        from: start * this.state.pageSize,
-        size: this.state.pageSize
-      }
-      if (
-        ['last_changes', 'repos_top', 'authors_top', 'approvals_top'].includes(
-          this.state.name
-        )
-      ) {
-        // Merge both associative arrays
-        queryParams = {
-          ...queryParams,
-          ...{
-            approvals: params.get('approvals'),
-            excludeApprovals: params.get('exclude_approvals'),
-            state: this.getFinalChangeState(params),
-            selfMerged: params.get('state') === 'SELF-MERGED'
-          }
+        ...queryParams,
+        ...{
+          approvals: params.get('approvals'),
+          excludeApprovals: params.get('exclude_approvals'),
+          state: getFinalChangeState(params),
+          selfMerged: params.get('state') === 'SELF-MERGED'
         }
       }
     }
-    this.props.handleQuery(queryParams)
   }
+  return queryParams
 }
 
 BaseQueryComponent.propTypes = {
@@ -368,6 +392,7 @@ BaseQueryComponent.propTypes = {
 }
 
 export {
+  mkQueryParams,
   LoadingBox,
   ErrorBox,
   BaseQueryComponent,

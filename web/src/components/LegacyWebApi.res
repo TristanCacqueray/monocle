@@ -3,10 +3,18 @@ open WebApi
 
 @module("../api.js") external serverUrl: string = "server"
 
+module Query = {
+  type t
+
+  @module("./common.jsx")
+  external mkQueryParams: (string, string, bool, bool, string, string, int, int) => t =
+    "mkQueryParams"
+}
+
 module ChangesReviewStats = {
   type t
-  @module("axios")
-  external getChangesReviewStatsRaw: string => axios<t> = "get"
+  @module("../api.js")
+  external getChangesReviewStatsRaw: Query.t => axios<t> = "getQueryResults"
 
   // Binding for existing components
   module View = {
@@ -14,11 +22,5 @@ module ChangesReviewStats = {
     external make: (~data: t) => React.element = "CChangesReviewStats"
   }
 
-  let get = (index): axios<t> => {
-    getChangesReviewStatsRaw(
-      serverUrl ++
-      "/api/0/query/changes_review_stats?index=" ++
-      index ++ "&repository=.*&gte=2021-03-04&from=0&size=10&ec_same_date=true",
-    )
-  }
+  let get = (query: Query.t): axios<t> => getChangesReviewStatsRaw(query)
 }

@@ -433,10 +433,11 @@ module FilterBox = {
 }
 
 @react.component
-let make = (~updateFilters: string => unit, ~showChangeParams: bool, ~index: string) => {
-  let suggestions = useAutoGet(() => WebApi.Search.suggestions({index: index}))
-  let indices = useAutoGet(() => WebApi.Config.getProjects({index: index}))
-  switch (indices, suggestions) {
+let make = (~store: Store.t, ~showChangeParams: bool) => {
+  let (state, dispatch) = store
+  let updateFilters = v => v->Store.Store.SetLegacyQuery->dispatch
+  let indices = useAutoGet(() => WebApi.Config.getProjects({index: state.index}))
+  switch (indices, Store.Fetch.suggestions(store)) {
   | (Some(Ok({projects})), Some(Ok(suggestions))) =>
     <FilterBox updateFilters showChangeParams projects suggestions />
   | (Some(Error(_error)), _)
