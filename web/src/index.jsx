@@ -19,8 +19,10 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { createMyStore } from './store'
 import '@patternfly/react-core/dist/styles/base.css'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './App.css'
 import './index.css'
-import App from './App'
+import App from './components/Main.bs.js'
 
 const store = createMyStore()
 

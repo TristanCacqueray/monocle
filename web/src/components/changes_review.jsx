@@ -22,15 +22,8 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
 import ListGroup from 'react-bootstrap/ListGroup'
-import PropTypes from 'prop-types'
-import { withRouter } from 'react-router-dom'
 
 import {
-  BaseQueryComponent,
-  LoadingBox,
-  ErrorBox,
-  mapDispatchToProps,
-  addMap,
   hasSmallWidth
 } from './common'
 
@@ -109,80 +102,47 @@ class ChangeReviewEventsHisto extends React.Component {
   }
 }
 
-ChangeReviewEventsHisto.propTypes = {
-  data: PropTypes.shape({
-    ChangeCommentedEvent: PropTypes.array,
-    ChangeReviewedEvent: PropTypes.array
-  })
-}
-
-class ChangesReviewStats extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'changes_review_stats'
-    this.state.graph_type = 'changes_review_stats'
-  }
-
-  render() {
-    if (!this.props.changes_review_stats_loading) {
-      if (this.props.changes_review_stats_error) {
-        return <ErrorBox error={this.props.changes_review_stats_error} />
-      }
-      const data = this.props.changes_review_stats_result
-      return (
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <Card.Title>Changes review stats</Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col md={4}>
-                    <ListGroup>
-                      <ListGroup.Item>
-                        {data.ChangeCommentedEvent.events_count} changes
-                        commented by {data.ChangeCommentedEvent.authors_count}{' '}
-                        authors
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        {data.ChangeReviewedEvent.events_count} changes reviewed
-                        by {data.ChangeReviewedEvent.authors_count} authors
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        Mean time for the first comment:{' '}
-                        {secondsToDhms(
-                          data.first_event_delay.comment.first_event_delay_avg
-                        )}
-                      </ListGroup.Item>
-                      <ListGroup.Item>
-                        Mean time for the first review:{' '}
-                        {secondsToDhms(
-                          data.first_event_delay.review.first_event_delay_avg
-                        )}
-                      </ListGroup.Item>
-                    </ListGroup>
-                  </Col>
-                  <Col md={8}>
-                    <ChangeReviewEventsHisto data={data.histos} />
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const mapStateToProps = (state) =>
-  addMap({}, state.QueryReducer, 'changes_review_stats')
-
-const CChangesReviewStats = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(ChangesReviewStats)
+const CChangesReviewStats = (data) => (
+  <Row>
+    <Col>
+      <Card>
+        <Card.Header>
+          <Card.Title>Changes review stats</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={4}>
+              <ListGroup>
+                <ListGroup.Item>
+                  {data.data.ChangeCommentedEvent.events_count} changes commented by{' '}
+                  {data.data.ChangeCommentedEvent.authors_count} authors
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  {data.data.ChangeReviewedEvent.events_count} changes reviewed by{' '}
+                  {data.data.ChangeReviewedEvent.authors_count} authors
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  Mean time for the first comment:{' '}
+                  {secondsToDhms(
+                    data.data.first_event_delay.comment.first_event_delay_avg
+                  )}
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  Mean time for the first review:{' '}
+                  {secondsToDhms(
+                    data.data.first_event_delay.review.first_event_delay_avg
+                  )}
+                </ListGroup.Item>
+              </ListGroup>
+            </Col>
+            <Col md={8}>
+              <ChangeReviewEventsHisto data={data.data.histos} />
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Col>
+  </Row>
 )
 
 export { CChangesReviewStats }
