@@ -16,25 +16,15 @@
 
 import React from 'react'
 
-import { connect } from 'react-redux'
-
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
 import ListGroup from 'react-bootstrap/ListGroup'
 import PropTypes from 'prop-types'
-import { withRouter } from 'react-router-dom'
 
 import { Line } from 'react-chartjs-2'
 
-import {
-  BaseQueryComponent,
-  LoadingBox,
-  ErrorBox,
-  mapDispatchToProps,
-  addMap,
-  hasSmallWidth
-} from './common'
+import { hasSmallWidth } from './common'
 
 class AuthorsHisto extends React.Component {
   prepareDataSet(histos) {
@@ -140,44 +130,19 @@ AuthorsHisto.propTypes = {
   })
 }
 
-class AuthorsHistoStats extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'authors_histo_stats'
-    this.state.graph_type = 'authors_histo_stats'
-  }
-
-  render() {
-    if (!this.props.authors_histo_stats_loading) {
-      if (this.props.authors_histo_stats_error) {
-        return <ErrorBox error={this.props.authors_histo_stats_error} />
-      }
-      const data = this.props.authors_histo_stats_result
-      return (
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <Card.Title>Active authors</Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <AuthorsHisto data={data} />
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const mapStateToProps = (state) =>
-  addMap({}, state.QueryReducer, 'authors_histo_stats')
-
-const CAuthorsHistoStats = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(AuthorsHistoStats)
+const CAuthorsHistoStats = (data) => (
+  <Row>
+    <Col>
+      <Card>
+        <Card.Header>
+          <Card.Title>Active authors</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <AuthorsHisto data={data.data} />
+        </Card.Body>
+      </Card>
+    </Col>
+  </Row>
 )
 
 export { CAuthorsHistoStats }

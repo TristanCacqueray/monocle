@@ -16,25 +16,16 @@
 
 import React from 'react'
 
-import { connect } from 'react-redux'
-
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
 import Table from 'react-bootstrap/Table'
 import PropTypes from 'prop-types'
-import { withRouter, Link } from 'react-router-dom'
+import Link from './LegacyLink.bs.js'
 
 import ConnectionDiagram from './connection_diagram'
 
-import {
-  BaseQueryComponent,
-  LoadingBox,
-  ErrorBox,
-  addUrlField,
-  mapDispatchToProps,
-  addMap
-} from './common'
+import { addUrlField } from './common'
 
 class TopEventsTable extends React.Component {
   rowStyleFormat(average, value) {
@@ -44,9 +35,6 @@ class TopEventsTable extends React.Component {
   }
 
   render() {
-    if (!this.props.data || !this.props.data.items) {
-      return <ErrorBox error={{ status: 0, data: 'Invalid data' }} />
-    }
     return (
       <Row>
         <Col>
@@ -98,147 +86,93 @@ TopEventsTable.propTypes = {
   })
 }
 
-class MostActiveAuthorsStats extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'most_active_authors_stats'
-    this.state.graph_type = 'most_active_authors_stats'
-  }
+const CMostActiveAuthorsStats = (data) => (
+  <Row>
+    <Col>
+      <Card>
+        <Card.Header>
+          <Card.Title>Most active authors stats</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md>
+              <TopEventsTable
+                data={data.data.ChangeCreatedEvent}
+                title="By Created Changes"
+              />
+            </Col>
+            <Col md>
+              <TopEventsTable
+                data={data.data.ChangeMergedEvent}
+                title="By Merged Changes"
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <p></p>
+            </Col>
+          </Row>
+          <Row>
+            <Col md>
+              <TopEventsTable
+                data={data.data.ChangeReviewedEvent}
+                title="By Reviewed Changes"
+              />
+            </Col>
+            <Col md>
+              <TopEventsTable
+                data={data.data.ChangeCommentedEvent}
+                title="By Commented Changes"
+              />
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Col>
+  </Row>
+)
 
-  render() {
-    if (!this.props.most_active_authors_stats_loading) {
-      if (this.props.most_active_authors_stats_error) {
-        return <ErrorBox error={this.props.most_active_authors_stats_error} />
-      }
-      const data = this.props.most_active_authors_stats_result
-      return (
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <Card.Title>Most active authors stats</Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col md>
-                    <TopEventsTable
-                      data={data.ChangeCreatedEvent}
-                      title="By Created Changes"
-                    />
-                  </Col>
-                  <Col md>
-                    <TopEventsTable
-                      data={data.ChangeMergedEvent}
-                      title="By Merged Changes"
-                    />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <p></p>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md>
-                    <TopEventsTable
-                      data={data.ChangeReviewedEvent}
-                      title="By Reviewed Changes"
-                    />
-                  </Col>
-                  <Col md>
-                    <TopEventsTable
-                      data={data.ChangeCommentedEvent}
-                      title="By Commented Changes"
-                    />
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
+const CMostReviewedAuthorsStats = (data) => (
+  <Row>
+    <Col>
+      <Card>
+        <Card.Header>
+          <Card.Title>Most reviewed authors stats</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md>
+              <TopEventsTable data={data.data.reviewed} title="Reviews" />
+            </Col>
+            <Col md>
+              <TopEventsTable data={data.data.commented} title="Comments" />
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Col>
+  </Row>
+)
 
-class MostReviewedAuthorsStats extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'most_reviewed_authors_stats'
-    this.state.graph_type = 'most_reviewed_authors_stats'
-  }
-
-  render() {
-    if (!this.props.most_reviewed_authors_stats_loading) {
-      if (this.props.most_reviewed_authors_stats_error) {
-        return <ErrorBox error={this.props.most_reviewed_authors_stats_error} />
-      }
-      const data = this.props.most_reviewed_authors_stats_result
-      return (
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <Card.Title>Most reviewed authors stats</Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col md>
-                    <TopEventsTable data={data.reviewed} title="Reviews" />
-                  </Col>
-                  <Col md>
-                    <TopEventsTable data={data.commented} title="Comments" />
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-class NewContributorsStats extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'new_contributors'
-    this.state.graph_type = 'new_contributors'
-  }
-
-  render() {
-    if (!this.props.new_contributors_loading) {
-      if (this.props.new_contributors_error) {
-        return <ErrorBox error={this.props.new_contributors_error} />
-      }
-      const data = this.props.new_contributors_result
-      return (
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <Card.Title>New contributors stats</Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col>
-                    <TopEventsTable data={data} title="Active Authors" />
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
+const CNewContributorsStats = (data) => (
+  <Row>
+    <Col>
+      <Card>
+        <Card.Header>
+          <Card.Title>New contributors stats</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col>
+              <TopEventsTable data={data.data} title="Active Authors" />
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Col>
+  </Row>
+)
 
 class TopStrengthsTable extends React.Component {
   render() {
@@ -299,48 +233,8 @@ TopStrengthsTable.propTypes = {
   data: PropTypes.array.isRequired
 }
 
-class AuthorsPeersStats extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'peers_exchange_strength'
-    this.state.graph_type = 'authors_peers_stats'
-  }
-
-  render() {
-    if (!this.props.authors_peers_stats_loading) {
-      if (this.props.authors_peers_stats_error) {
-        return <ErrorBox error={this.props.authors_peers_stats_error} />
-      }
-      const data = this.props.authors_peers_stats_result
-      return <TopStrengthsTable data={data} title="Peers strength" />
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const mapStateToProps = (state) => {
-  const map = {}
-
-  addMap(map, state.QueryReducer, 'new_contributors')
-  addMap(map, state.QueryReducer, 'most_active_authors_stats')
-  addMap(map, state.QueryReducer, 'most_reviewed_authors_stats')
-  addMap(map, state.QueryReducer, 'authors_peers_stats')
-
-  return map
-}
-
-const CMostActiveAuthorsStats = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(MostActiveAuthorsStats)
-)
-const CNewContributorsStats = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(NewContributorsStats)
-)
-const CMostReviewedAuthorsStats = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(MostReviewedAuthorsStats)
-)
-const CAuthorsPeersStats = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(AuthorsPeersStats)
+const CAuthorsPeersStats = (data) => (
+  <TopStrengthsTable data={data.data} title="Peers strength" />
 )
 
 export {

@@ -17,6 +17,32 @@ module RootView = {
   }
 }
 
+module AuthorView = {
+  open LegacyApp
+  @react.component
+  let make = (~store: Store.t) => {
+    let (state, _) = store
+    switch (
+      AuthorsHistoStats.fetch(store),
+      MostActiveAuthorsStats.fetch(store),
+      MostReviewedAuthorsStats.fetch(store),
+      AuthorsPeersStats.fetch(store),
+      NewContributorsStats.fetch(store),
+    ) {
+    | (Some(Ok(ah)), Some(Ok(maa)), Some(Ok(mra)), Some(Ok(aps)), Some(Ok(ncs))) =>
+      <div className="container">
+        <FiltersForm store showChangeParams={false} />
+        <AuthorsHistoStats.View data={ah} />
+        <MostActiveAuthorsStats.View data={maa} />
+        <MostReviewedAuthorsStats.View data={mra} />
+        <AuthorsPeersStats.View data={aps} />
+        <NewContributorsStats.View data={ncs} />
+      </div>
+    | _ => <Spinner />
+    }
+  }
+}
+
 module Main = {
   @react.component
   let make = () => {
@@ -73,6 +99,7 @@ module Main = {
             />
           | list{_index} => <RootView store />
           | list{_index, "board"} => <Board store />
+          | list{_index, "people"} => <AuthorView store />
           | list{_index, _} => <p> {("index: " ++ state.index)->str} </p>
           | _ => <p> {"Not found"->str} </p>
           }

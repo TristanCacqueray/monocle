@@ -31,17 +31,37 @@ module Legacy = {
 
   module ChangesReviewStats = {
     type t
-    @module("../api.js")
-    external getQueryResults: Query.t => axios<t> = "getQueryResults"
-
-    let get = (query: Query.t): axios<t> => getQueryResults(query)
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
   }
 
   module ChangesLifeCycleStats = {
     type t
-    @module("../api.js")
-    external getQueryResults: Query.t => axios<t> = "getQueryResults"
-    let get = (query: Query.t): axios<t> => getQueryResults(query)
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module AuthorsHistoStats = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module MostActiveAuthorsStats = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module MostReviewedAuthorsStats = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module AuthorsPeersStats = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module NewContributorsStats = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
   }
 }
 
@@ -51,6 +71,12 @@ module Store = {
   type changesReviewStatsR = RemoteData.t<Legacy.ChangesReviewStats.t>
   type changesLifeCycleStatsR = RemoteData.t<Legacy.ChangesLifeCycleStats.t>
 
+  type authorsHistoStatsR = RemoteData.t<Legacy.AuthorsHistoStats.t>
+  type mostActiveAuthorsStatsR = RemoteData.t<Legacy.MostActiveAuthorsStats.t>
+  type mostReviewedAuthorsStatsR = RemoteData.t<Legacy.MostReviewedAuthorsStats.t>
+  type authorsPeersStatsR = RemoteData.t<Legacy.AuthorsPeersStats.t>
+  type newContributorsStatsR = RemoteData.t<Legacy.NewContributorsStats.t>
+
   type t = {
     index: string,
     query: string,
@@ -59,6 +85,11 @@ module Store = {
     fields: RemoteData.t<list<SearchTypes.field>>,
     changesReviewStats: changesReviewStatsR,
     changesLifeCycleStats: changesLifeCycleStatsR,
+    authorsHistoStats: authorsHistoStatsR,
+    mostActiveAuthorsStats: mostActiveAuthorsStatsR,
+    mostReviewedAuthorsStats: mostReviewedAuthorsStatsR,
+    authorsPeersStats: authorsPeersStatsR,
+    newContributorsStats: newContributorsStatsR,
   }
   type action =
     | SetIndex(string)
@@ -68,6 +99,11 @@ module Store = {
     | FetchSuggestions(suggestionsR)
     | FetchChangesReviewStats(changesReviewStatsR)
     | FetchChangesLifeCycleStats(changesLifeCycleStatsR)
+    | FetchAuthorsHistoStats(authorsHistoStatsR)
+    | FetchMostActiveAuthorsStats(mostActiveAuthorsStatsR)
+    | FetchMostReviewedAuthorsStats(mostReviewedAuthorsStatsR)
+    | FetchAuthorsPeersStats(authorsPeersStatsR)
+    | FetchNewContributorsStats(newContributorsStatsR)
   type dispatch = action => unit
 
   let reducer = (state: t, action: action) =>
@@ -86,8 +122,17 @@ module Store = {
     | SetLegacyQuery(legacyQuery) => {...state, legacyQuery: legacyQuery, changesReviewStats: None}
     | FetchFields(res) => {...state, fields: res->RemoteData.fmap(resp => resp.fields)}
     | FetchSuggestions(res) => {...state, suggestions: res}
+
+    // Root view
     | FetchChangesReviewStats(res) => {...state, changesReviewStats: res}
     | FetchChangesLifeCycleStats(res) => {...state, changesLifeCycleStats: res}
+
+    // Author view
+    | FetchAuthorsHistoStats(res) => {...state, authorsHistoStats: res}
+    | FetchMostActiveAuthorsStats(res) => {...state, mostActiveAuthorsStats: res}
+    | FetchMostReviewedAuthorsStats(res) => {...state, mostReviewedAuthorsStats: res}
+    | FetchAuthorsPeersStats(res) => {...state, authorsPeersStats: res}
+    | FetchNewContributorsStats(res) => {...state, newContributorsStats: res}
     }
 
   // TODO: replace static index with a SetIndex action, after the LegacyApp is removed
@@ -99,6 +144,11 @@ module Store = {
     fields: None,
     changesReviewStats: None,
     changesLifeCycleStats: None,
+    authorsHistoStats: None,
+    mostActiveAuthorsStats: None,
+    mostReviewedAuthorsStats: None,
+    authorsPeersStats: None,
+    newContributorsStats: None,
   }
 }
 
