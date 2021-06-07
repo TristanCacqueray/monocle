@@ -132,6 +132,7 @@ module Store = {
     changesReposPie: changesReposPieR,
     changesApprovalsPie: changesApprovalsPieR,
     change: changeR,
+    user: RemoteData.t<string>,
   }
   type action =
     | SetIndex(string)
@@ -152,6 +153,7 @@ module Store = {
     | FetchChangesReposPie(changesReposPieR)
     | FetchChangesApprovalsPie(changesApprovalsPieR)
     | FetchChange(changeR)
+    | FetchLoggedUser(RemoteData.t<string>)
   type dispatch = action => unit
 
   let reducer = (state: t, action: action) =>
@@ -167,6 +169,9 @@ module Store = {
         Prelude.setLocationSearch("q", query)->ignore
         {...state, query: query}
       }
+    // Logged user
+    | FetchLoggedUser(res) => {...state, user: res}
+
     | SetLegacyQuery(legacyQuery) => {...state, legacyQuery: legacyQuery, changesReviewStats: None}
     | FetchFields(res) => {...state, fields: res->RemoteData.fmap(resp => resp.fields)}
     | FetchSuggestions(res) => {...state, suggestions: res}
@@ -215,6 +220,7 @@ module Store = {
     changesReposPie: None,
     changesApprovalsPie: None,
     change: None,
+    user: None,
   }
 }
 
@@ -263,6 +269,10 @@ module Fetch = {
       res => Store.FetchFields(res),
       dispatch,
     )
+  }
+
+  let loggedUser = ((state: Store.t, dispatch)) => {
+    fetch(None, state.user, Prelude.getLoggedUser, res => Store.FetchLoggedUser(res), dispatch)
   }
 }
 

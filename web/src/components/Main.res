@@ -147,6 +147,8 @@ module Main = {
                 indice->Store.Store.SetIndex->dispatch
               }}
             />
+          | list{"login"} => <User.LoginView />
+          | list{"user"} => <User.View store />
           | list{_index} => <RootView store />
           | list{_index, "board"} => <Board store />
           | list{_index, "people"} => <PeopleView store />

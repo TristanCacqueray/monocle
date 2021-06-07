@@ -15,6 +15,8 @@ type axiosGetCallback<'data> = unit => axios<'data>
 @module("../api.js") external apiUrl: string = "baseurl"
 @module("../api.js")
 external getIndices: unit => axios<array<string>> = "getIndices"
+@module("../api.js")
+external getLoggedUser: unit => axios<string> = "getLoggedUser"
 @val @scope(("window", "location"))
 external windowLocationSearch: string = "search"
 let readWindowLocationSearch = () => windowLocationSearch
