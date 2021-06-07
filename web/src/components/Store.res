@@ -16,10 +16,40 @@ module UrlData = {
   }
 }
 
+module Legacy = {
+  open WebApi
+
+  @module("../api.js") external serverUrl: string = "server"
+
+  module Query = {
+    type t
+
+    @module("./common.jsx")
+    external mkQueryParams: (string, string, bool, bool, string, string, int, int) => t =
+      "mkQueryParams"
+  }
+
+  module ChangesReviewStats = {
+    type t
+    @module("../api.js")
+    external getQueryResults: Query.t => axios<t> = "getQueryResults"
+
+    let get = (query: Query.t): axios<t> => getQueryResults(query)
+  }
+
+  module ChangesLifeCycleStats = {
+    type t
+    @module("../api.js")
+    external getQueryResults: Query.t => axios<t> = "getQueryResults"
+    let get = (query: Query.t): axios<t> => getQueryResults(query)
+  }
+}
+
 module Store = {
   type suggestionsR = RemoteData.t<SearchTypes.search_suggestions_response>
   type fieldsRespR = RemoteData.t<SearchTypes.fields_response>
-  type changesReviewStatsR = RemoteData.t<LegacyWebApi.ChangesReviewStats.t>
+  type changesReviewStatsR = RemoteData.t<Legacy.ChangesReviewStats.t>
+  type changesLifeCycleStatsR = RemoteData.t<Legacy.ChangesLifeCycleStats.t>
 
   type t = {
     index: string,
@@ -28,6 +58,7 @@ module Store = {
     suggestions: suggestionsR,
     fields: RemoteData.t<list<SearchTypes.field>>,
     changesReviewStats: changesReviewStatsR,
+    changesLifeCycleStats: changesLifeCycleStatsR,
   }
   type action =
     | SetIndex(string)
@@ -36,6 +67,7 @@ module Store = {
     | FetchFields(fieldsRespR)
     | FetchSuggestions(suggestionsR)
     | FetchChangesReviewStats(changesReviewStatsR)
+    | FetchChangesLifeCycleStats(changesLifeCycleStatsR)
   type dispatch = action => unit
 
   let reducer = (state: t, action: action) =>
@@ -46,6 +78,7 @@ module Store = {
         index: index,
         changesReviewStats: None,
       }
+    | SetIndex(_) => state
     | SetQuery(query) => {
         Prelude.setLocationSearch("q", query)->ignore
         {...state, query: query}
@@ -54,6 +87,7 @@ module Store = {
     | FetchFields(res) => {...state, fields: res->RemoteData.fmap(resp => resp.fields)}
     | FetchSuggestions(res) => {...state, suggestions: res}
     | FetchChangesReviewStats(res) => {...state, changesReviewStats: res}
+    | FetchChangesLifeCycleStats(res) => {...state, changesLifeCycleStats: res}
     }
 
   // TODO: replace static index with a SetIndex action, after the LegacyApp is removed
@@ -64,6 +98,7 @@ module Store = {
     suggestions: None,
     fields: None,
     changesReviewStats: None,
+    changesLifeCycleStats: None,
   }
 }
 

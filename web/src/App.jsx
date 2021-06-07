@@ -26,8 +26,6 @@ import PropTypes from 'prop-types'
 import TopMenu from './components/menu'
 import Footer from './components/footer'
 import { LoginView, CUserView } from './components/user'
-import { CChangesLifeCycleStats } from './components/changes_lifecycle'
-import { CChangesReviewStats } from './components/changes_review'
 import { CAuthorsHistoStats } from './components/authors_histo'
 import {
   CNewContributorsStats,
@@ -47,36 +45,6 @@ class RootView extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <Row>
-          <Col>
-            <CFiltersForm index={this.props.match.params.index} />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <p></p>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <p></p>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <CChangesLifeCycleStats index={this.props.match.params.index} />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <p></p>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <CChangesReviewStats index={this.props.match.params.index} />
-          </Col>
-        </Row>
       </React.Fragment>
     )
   }

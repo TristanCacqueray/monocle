@@ -1,25 +1,16 @@
 open Prelude
 
-module ChangePage = {
+module RootView = {
+  open LegacyApp
   @react.component
   let make = (~store: Store.t) => {
     let (state, _) = store
-    switch LegacyStore.ChangesReviewStats.fetch(
-      LegacyWebApi.Query.mkQueryParams(
-        "changes_review_stats",
-        "changes_review_stats",
-        false,
-        false,
-        state.legacyQuery,
-        state.index,
-        0,
-        10,
-      ),
-      store,
-    ) {
-    | Some(Ok(data)) =>
+    switch (ChangesLifeCycleStats.fetch(store), ChangesReviewStats.fetch(store)) {
+    | (Some(Ok(lf)), Some(Ok(rs))) =>
       <div className="container">
-        <FiltersForm store showChangeParams={false} /> <LegacyWebApi.ChangesReviewStats.View data />
+        <FiltersForm store showChangeParams={false} />
+        <ChangesLifeCycleStats.View index={state.index} data={lf} />
+        <ChangesReviewStats.View data={rs} />
       </div>
     | _ => <Spinner />
     }
@@ -80,7 +71,7 @@ module Main = {
                 indice->Store.Store.SetIndex->dispatch
               }}
             />
-          | list{_index} => <ChangePage store />
+          | list{_index} => <RootView store />
           | list{_index, "board"} => <Board store />
           | list{_index, _} => <p> {("index: " ++ state.index)->str} </p>
           | _ => <p> {"Not found"->str} </p>
