@@ -192,3 +192,30 @@ module NewContributorsStats = {
     )
   }
 }
+
+module Repos = {
+  module View = {
+    @react.component @module("./repos_summary.jsx")
+    external make: (~index: string, ~data: Legacy.Repos.t) => React.element = "CRepoChanges"
+  }
+
+  let fetch = ((state: Store.t, dispatch)) => {
+    let query = Legacy.Query.mkQueryParams(
+      "repos_summary",
+      "repos_summary",
+      false,
+      false,
+      state.legacyQuery,
+      state.index,
+      0,
+      10,
+    )
+    Fetch.fetch(
+      query,
+      state.repos,
+      () => Legacy.Repos.get(query),
+      res => Store.FetchRepos(res),
+      dispatch,
+    )
+  }
+}

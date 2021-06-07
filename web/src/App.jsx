@@ -27,7 +27,6 @@ import TopMenu from './components/menu'
 import Footer from './components/footer'
 import { LoginView, CUserView } from './components/user'
 import { CHotChanges, CColdChanges } from './components/changes'
-import { CRepoChanges } from './components/repos_summary'
 import CFiltersForm from './components/filtersform'
 import { CChange } from './components/change'
 import Indices from './components/Indices.bs.js'
@@ -76,8 +75,6 @@ class ReposView extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <CFiltersForm index={this.props.match.params.index} />
-        <CRepoChanges index={this.props.match.params.index} />
       </React.Fragment>
     )
   }

@@ -16,23 +16,14 @@
 
 import React from 'react'
 
-import { connect } from 'react-redux'
-
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
 import Table from 'react-bootstrap/Table'
 import PropTypes from 'prop-types'
-import { withRouter, Link } from 'react-router-dom'
+import Link from './LegacyLink.bs.js'
 
-import {
-  BaseQueryComponent,
-  LoadingBox,
-  ErrorBox,
-  addUrlField,
-  mapDispatchToProps,
-  addMap
-} from './common'
+import { addUrlField } from './common'
 
 class RepoChangesTable extends React.Component {
   createLink(index, name, type, field) {
@@ -125,37 +116,12 @@ RepoChangesTable.propTypes = {
   })
 }
 
-class RepoChanges extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'repos_summary'
-    this.state.graph_type = 'repos_summary'
-  }
-
-  render() {
-    if (!this.props.repos_summary_loading) {
-      if (this.props.repos_summary_error) {
-        return <ErrorBox error={this.props.repos_summary_error} />
-      }
-      const data = this.props.repos_summary_result
-      return (
-        <RepoChangesTable
-          index={this.props.index}
-          data={data}
-          title="Repositories summary"
-        />
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const reposTopMergedMapStateToProps = (state) =>
-  addMap({}, state.QueryReducer, 'repos_summary')
-
-const CRepoChanges = withRouter(
-  connect(reposTopMergedMapStateToProps, mapDispatchToProps)(RepoChanges)
+const CRepoChanges = (data) => (
+  <RepoChangesTable
+    index={data.index}
+    data={data.data}
+    title="Repositories summary"
+  />
 )
 
 export { CRepoChanges }

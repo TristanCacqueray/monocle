@@ -63,6 +63,11 @@ module Legacy = {
     type t
     @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
   }
+
+  module Repos = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
 }
 
 module Store = {
@@ -76,6 +81,7 @@ module Store = {
   type mostReviewedAuthorsStatsR = RemoteData.t<Legacy.MostReviewedAuthorsStats.t>
   type authorsPeersStatsR = RemoteData.t<Legacy.AuthorsPeersStats.t>
   type newContributorsStatsR = RemoteData.t<Legacy.NewContributorsStats.t>
+  type reposR = RemoteData.t<Legacy.Repos.t>
 
   type t = {
     index: string,
@@ -90,6 +96,7 @@ module Store = {
     mostReviewedAuthorsStats: mostReviewedAuthorsStatsR,
     authorsPeersStats: authorsPeersStatsR,
     newContributorsStats: newContributorsStatsR,
+    repos: reposR,
   }
   type action =
     | SetIndex(string)
@@ -104,6 +111,7 @@ module Store = {
     | FetchMostReviewedAuthorsStats(mostReviewedAuthorsStatsR)
     | FetchAuthorsPeersStats(authorsPeersStatsR)
     | FetchNewContributorsStats(newContributorsStatsR)
+    | FetchRepos(reposR)
   type dispatch = action => unit
 
   let reducer = (state: t, action: action) =>
@@ -133,6 +141,9 @@ module Store = {
     | FetchMostReviewedAuthorsStats(res) => {...state, mostReviewedAuthorsStats: res}
     | FetchAuthorsPeersStats(res) => {...state, authorsPeersStats: res}
     | FetchNewContributorsStats(res) => {...state, newContributorsStats: res}
+
+    // Repo view
+    | FetchRepos(res) => {...state, repos: res}
     }
 
   // TODO: replace static index with a SetIndex action, after the LegacyApp is removed
@@ -149,6 +160,7 @@ module Store = {
     mostReviewedAuthorsStats: None,
     authorsPeersStats: None,
     newContributorsStats: None,
+    repos: None,
   }
 }
 

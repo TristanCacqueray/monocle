@@ -17,7 +17,7 @@ module RootView = {
   }
 }
 
-module AuthorView = {
+module PeopleView = {
   open LegacyApp
   @react.component
   let make = (~store: Store.t) => {
@@ -37,6 +37,21 @@ module AuthorView = {
         <MostReviewedAuthorsStats.View data={mra} />
         <AuthorsPeersStats.View data={aps} />
         <NewContributorsStats.View data={ncs} />
+      </div>
+    | _ => <Spinner />
+    }
+  }
+}
+
+module ReposView = {
+  open LegacyApp
+  @react.component
+  let make = (~store: Store.t) => {
+    let (state, _) = store
+    switch Repos.fetch(store) {
+    | Some(Ok(data)) =>
+      <div className="container">
+        <FiltersForm store showChangeParams={false} /> <Repos.View index={state.index} data />
       </div>
     | _ => <Spinner />
     }
@@ -99,7 +114,8 @@ module Main = {
             />
           | list{_index} => <RootView store />
           | list{_index, "board"} => <Board store />
-          | list{_index, "people"} => <AuthorView store />
+          | list{_index, "people"} => <PeopleView store />
+          | list{_index, "repos"} => <ReposView store />
           | list{_index, _} => <p> {("index: " ++ state.index)->str} </p>
           | _ => <p> {"Not found"->str} </p>
           }
