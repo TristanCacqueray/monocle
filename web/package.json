@@ -26,9 +26,6 @@
     "react-event-timeline": "^1.6.3",
     "react-loading": "^2.0.3",
     "react-paginate": "^7.1.2",
-    "react-redux": "^7.2.3",
-    "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0",
     "yargs-parser": "^20.2.7"
   },
   "scripts": {
