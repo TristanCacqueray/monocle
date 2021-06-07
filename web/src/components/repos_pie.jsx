@@ -16,70 +16,29 @@
 
 import React from 'react'
 
-import { connect } from 'react-redux'
-
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
-import { withRouter } from 'react-router-dom'
-
-import {
-  LoadingBox,
-  ErrorBox,
-  BaseQueryComponent,
-  mapDispatchToProps,
-  addMap
-} from './common'
 
 import Pie from './pie'
 
-class ReposPie extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'repos_top'
-    this.state.graph_type = 'repos_top'
-  }
-
-  render() {
-    if (!this.props.repos_top_loading) {
-      if (this.props.repos_top_error) {
-        return <ErrorBox error={this.props.repos_top_error} />
-      }
-      if (!this.props.repos_top_result) {
-        return <ErrorBox error={{ data: 'No data for ReposPie', status: 0 }} />
-      }
-      return (
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <Card.Title>Changes per repository</Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col>
-                    <Pie
-                      field="repository"
-                      history={this.props.history}
-                      data={this.props.repos_top_result}
-                    />
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const mapStateToProps = (state) => addMap({}, state.QueryReducer, 'repos_top')
-
-const CReposPie = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(ReposPie)
+const CReposPie = (data) => (
+  <Row>
+    <Col>
+      <Card>
+        <Card.Header>
+          <Card.Title>Changes per repository</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col>
+              <Pie field="repository" data={data.data} />
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Col>
+  </Row>
 )
 
 export default CReposPie

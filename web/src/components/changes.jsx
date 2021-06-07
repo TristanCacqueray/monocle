@@ -16,27 +16,20 @@
 
 import React from 'react'
 
-import { connect } from 'react-redux'
-
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
 import ReactPaginate from 'react-paginate'
 import PropTypes from 'prop-types'
-import { withRouter, Link } from 'react-router-dom'
 import { ArrowUpRightSquare } from 'react-bootstrap-icons'
 import Change from './Change.bs.js'
+import Link from './LegacyLink.bs.js'
 
 import moment from 'moment'
 
 import {
-  BaseQueryComponent,
-  LoadingBox,
-  ErrorBox,
   changeUrl,
   addUrlField,
-  mapDispatchToProps,
-  addMap,
   chooseApprovalBadgeStyle,
   ChangeStatus
 } from './common'
@@ -187,150 +180,32 @@ ChangesTable.propTypes = {
   index: PropTypes.string.isRequired
 }
 
-class HotChanges extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'hot_changes'
-    this.state.graph_type = 'hot_changes'
+const CLastChangesNG = (data) => {
+  let graph = <div></div>
+  if (false && data.showComplexityGraph) {
+    graph = (
+      <DurationComplexityGraph
+        history={this.props.history}
+        data={data}
+        timeFunc={this.extractTime}
+        index={this.props.index}
+      />
+    )
   }
-
-  render() {
-    if (!this.props.hot_changes_loading) {
-      if (this.props.hot_changes_error) {
-        return <ErrorBox error={this.props.hot_changes_error} />
-      }
-      const data = this.props.hot_changes_result
-      return (
-        <ChangesTable
-          index={this.props.index}
-          data={data}
-          title="Hot changes"
-        />
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const hotChangesMapStateToProps = (state) =>
-  addMap({}, state.QueryReducer, 'hot_changes')
-
-const CHotChanges = withRouter(
-  connect(hotChangesMapStateToProps, mapDispatchToProps)(HotChanges)
-)
-
-class ColdChanges extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'cold_changes'
-    this.state.graph_type = 'cold_changes'
-  }
-
-  render() {
-    if (!this.props.cold_changes_loading) {
-      if (this.props.cold_changes_error) {
-        return <ErrorBox error={this.props.cold_changes_error} />
-      }
-      const data = this.props.cold_changes_result
-      return (
-        <ChangesTable
-          index={this.props.index}
-          data={data}
-          title="Cold changes"
-        />
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const coldChangesMapStateToProps = (state) =>
-  addMap({}, state.QueryReducer, 'cold_changes')
-
-const CColdChanges = withRouter(
-  connect(coldChangesMapStateToProps, mapDispatchToProps)(ColdChanges)
-)
-
-class AbstractLastChanges extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'last_changes'
-    this.state.pageSize = 100
-  }
-
-  render() {
-    if (!this.props[this.state.graph_type + '_loading']) {
-      if (this.props[this.state.graph_type + '_error']) {
-        return <ErrorBox error={this.props[this.state.graph_type + '_error']} />
-      }
-      const data = this.props[this.state.graph_type + '_result']
-      let graph = <div></div>
-      if (
-        this.props.showComplexityGraph &&
-        (this.state.state === 'MERGED' || this.state.state === 'CLOSED')
-      ) {
-        graph = (
-          <DurationComplexityGraph
-            history={this.props.history}
-            data={data}
-            timeFunc={this.extractTime}
-            index={this.props.index}
+  return (
+    <React.Fragment>
+      <Row>
+        <Col>
+          <ChangesTable
+            index={data.index}
+            graph={graph}
+            data={data.data}
+            title={data.data.total + ' Changes'}
           />
-        )
-      }
-      return (
-        <React.Fragment>
-          <Row>
-            <Col>
-              <ChangesTable
-                index={this.props.index}
-                graph={graph}
-                data={data}
-                title={data.total + ' ' + this.state.title}
-                selectedPage={this.state.selectedPage}
-                pageCount={Math.ceil(data.total / this.state.pageSize)}
-                pageChangeCallback={this.handlePageChange}
-                pageChangeTarget={this}
-              />
-            </Col>
-          </Row>
-        </React.Fragment>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
+        </Col>
+      </Row>
+    </React.Fragment>
+  )
 }
 
-AbstractLastChanges.propTypes = {
-  last_changes_loading: PropTypes.bool,
-  last_changes_result: PropTypes.shape({
-    merged_changes: PropTypes.shape({
-      items: PropTypes.array
-    }),
-    opened_changes: PropTypes.shape({
-      items: PropTypes.array
-    })
-  })
-}
-
-class LastChangesNG extends AbstractLastChanges {
-  constructor(props) {
-    super(props)
-    this.state.graph_type = 'last_changes'
-    this.state.title = 'Changes'
-  }
-
-  extractTime(x) { return x.created_at; }
-}
-
-const lastChangesNGMapStateToProps = (state) =>
-  addMap({}, state.QueryReducer, 'last_changes')
-
-const CLastChangesNG = withRouter(
-  connect(lastChangesNGMapStateToProps, mapDispatchToProps)(LastChangesNG)
-)
-
-export { CHotChanges, CColdChanges, CLastChangesNG }
+export { CLastChangesNG }

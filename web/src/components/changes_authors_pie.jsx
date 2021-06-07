@@ -16,72 +16,29 @@
 
 import React from 'react'
 
-import { connect } from 'react-redux'
-
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
-import { withRouter } from 'react-router-dom'
-
-import {
-  LoadingBox,
-  ErrorBox,
-  BaseQueryComponent,
-  mapDispatchToProps,
-  addMap
-} from './common'
 
 import Pie from './pie'
 
-class ChangesAuthorsPie extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'authors_top'
-    this.state.graph_type = 'authors_top'
-  }
-
-  render() {
-    if (!this.props.authors_top_loading) {
-      if (this.props.authors_top_error) {
-        return <ErrorBox error={this.props.authors_top_error} />
-      }
-      if (!this.props.authors_top_result) {
-        return (
-          <ErrorBox error={{ data: 'No data for authors top', status: 0 }} />
-        )
-      }
-      return (
-        <Row>
-          <Col>
-            <Card>
-              <Card.Header>
-                <Card.Title>Changes per author</Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col>
-                    <Pie
-                      field="authors"
-                      history={this.props.history}
-                      data={this.props.authors_top_result}
-                    />
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-const mapStateToProps = (state) => addMap({}, state.QueryReducer, 'authors_top')
-
-const CChangesAuthorsPie = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(ChangesAuthorsPie)
+const CChangesAuthorsPie = (data) => (
+  <Row>
+    <Col>
+      <Card>
+        <Card.Header>
+          <Card.Title>Changes per author</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col>
+              <Pie field="authors" data={data.data} />
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Col>
+  </Row>
 )
 
 export default CChangesAuthorsPie

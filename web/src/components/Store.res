@@ -68,6 +68,26 @@ module Legacy = {
     type t
     @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
   }
+
+  module Changes = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module ChangesAuthorsPie = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module ChangesReposPie = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
+
+  module ChangesApprovalsPie = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
 }
 
 module Store = {
@@ -82,6 +102,10 @@ module Store = {
   type authorsPeersStatsR = RemoteData.t<Legacy.AuthorsPeersStats.t>
   type newContributorsStatsR = RemoteData.t<Legacy.NewContributorsStats.t>
   type reposR = RemoteData.t<Legacy.Repos.t>
+  type changesR = RemoteData.t<Legacy.Changes.t>
+  type changesAuthorsPieR = RemoteData.t<Legacy.ChangesAuthorsPie.t>
+  type changesReposPieR = RemoteData.t<Legacy.ChangesReposPie.t>
+  type changesApprovalsPieR = RemoteData.t<Legacy.ChangesApprovalsPie.t>
 
   type t = {
     index: string,
@@ -97,6 +121,10 @@ module Store = {
     authorsPeersStats: authorsPeersStatsR,
     newContributorsStats: newContributorsStatsR,
     repos: reposR,
+    changes: changesR,
+    changesAuthorsPie: changesAuthorsPieR,
+    changesReposPie: changesReposPieR,
+    changesApprovalsPie: changesApprovalsPieR,
   }
   type action =
     | SetIndex(string)
@@ -112,6 +140,10 @@ module Store = {
     | FetchAuthorsPeersStats(authorsPeersStatsR)
     | FetchNewContributorsStats(newContributorsStatsR)
     | FetchRepos(reposR)
+    | FetchChanges(changesR)
+    | FetchChangesAuthorsPie(changesAuthorsPieR)
+    | FetchChangesReposPie(changesReposPieR)
+    | FetchChangesApprovalsPie(changesApprovalsPieR)
   type dispatch = action => unit
 
   let reducer = (state: t, action: action) =>
@@ -144,6 +176,12 @@ module Store = {
 
     // Repo view
     | FetchRepos(res) => {...state, repos: res}
+
+    // Change view
+    | FetchChanges(res) => {...state, changes: res}
+    | FetchChangesAuthorsPie(res) => {...state, changesAuthorsPie: res}
+    | FetchChangesReposPie(res) => {...state, changesReposPie: res}
+    | FetchChangesApprovalsPie(res) => {...state, changesApprovalsPie: res}
     }
 
   // TODO: replace static index with a SetIndex action, after the LegacyApp is removed
@@ -161,6 +199,10 @@ module Store = {
     authorsPeersStats: None,
     newContributorsStats: None,
     repos: None,
+    changes: None,
+    changesAuthorsPie: None,
+    changesReposPie: None,
+    changesApprovalsPie: None,
   }
 }
 

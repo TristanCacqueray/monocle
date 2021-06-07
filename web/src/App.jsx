@@ -26,11 +26,9 @@ import PropTypes from 'prop-types'
 import TopMenu from './components/menu'
 import Footer from './components/footer'
 import { LoginView, CUserView } from './components/user'
-import { CHotChanges, CColdChanges } from './components/changes'
 import CFiltersForm from './components/filtersform'
 import { CChange } from './components/change'
 import Indices from './components/Indices.bs.js'
-import ChangesView from './components/ChangesView.bs.js'
 import Board from './components/Board.bs.js'
 
 class RootView extends React.Component {
@@ -89,55 +87,10 @@ ReposView.propTypes = {
   })
 }
 
-class HotChangesView extends React.Component {
-  render() {
-    return (
-      <React.Fragment>
-        <CFiltersForm index={this.props.match.params.index} />
-        <CHotChanges index={this.props.match.params.index} />
-      </React.Fragment>
-    )
-  }
-}
-HotChangesView.propTypes = {
-  history: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired,
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      index: PropTypes.string
-    })
-  })
-}
-
-class ColdChangesView extends React.Component {
-  render() {
-    return (
-      <React.Fragment>
-        <CFiltersForm index={this.props.match.params.index} />
-        <CColdChanges index={this.props.match.params.index} />
-      </React.Fragment>
-    )
-  }
-}
-ColdChangesView.propTypes = {
-  history: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired,
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      index: PropTypes.string
-    })
-  })
-}
-
 class ChangesViewRoute extends React.Component {
   render() {
     return (
       <>
-        <CFiltersForm
-          index={this.props.match.params.index}
-          showChangeParams={true}
-        />
-        <ChangesView index={this.props.match.params.index} />
       </>
     )
   }
@@ -200,8 +153,6 @@ let LegacyApp = () => (
       <Route exact path="/:index/repos" component={ReposView} />
       <Route exact path="/:index" component={RootView} />
       <Route path="/:index/changes" component={ChangesViewRoute} />
-      <Route path="/:index/hot-changes" component={HotChangesView} />
-      <Route path="/:index/cold-changes" component={ColdChangesView} />
       <Route path="/:index/change/:change" component={ChangeView} />
       <Route path="/:index/board" component={BoardView} />
     </Switch>

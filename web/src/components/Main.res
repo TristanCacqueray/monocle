@@ -58,6 +58,28 @@ module ReposView = {
   }
 }
 
+module ChangesView = {
+  open LegacyApp
+  @react.component
+  let make = (~store: Store.t) => {
+    let (showPies, setShowPies) = React.useState(_ => false)
+    let (state, _) = store
+    let index = state.index
+    switch Changes.fetch(store) {
+    | Some(Ok(data)) =>
+      <MStack>
+        <MStackItem> <FiltersForm store showChangeParams={true} /> </MStackItem>
+        <MStackItem> <ChangesStats.StatsToggle showPies setShowPies /> </MStackItem>
+        {showPies ? <MStackItem> <ChangesStats.Pies store /> </MStackItem> : {React.null}}
+        <MStackItem>
+          <LegacyApp.Changes.View index data showComplexityGraph={showPies} />
+        </MStackItem>
+      </MStack>
+    | _ => <Spinner />
+    }
+  }
+}
+
 module Main = {
   @react.component
   let make = () => {
@@ -116,6 +138,7 @@ module Main = {
           | list{_index, "board"} => <Board store />
           | list{_index, "people"} => <PeopleView store />
           | list{_index, "repos"} => <ReposView store />
+          | list{_index, "changes"} => <ChangesView store />
           | list{_index, _} => <p> {("index: " ++ state.index)->str} </p>
           | _ => <p> {"Not found"->str} </p>
           }

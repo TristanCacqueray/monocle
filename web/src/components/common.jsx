@@ -23,6 +23,7 @@ import Alert from 'react-bootstrap/Alert'
 import Badge from 'react-bootstrap/Badge'
 import Spinner from 'react-bootstrap/Spinner'
 import PropTypes from 'prop-types'
+import Link from './LegacyLink.bs.js'
 
 import { query } from '../reducers/query'
 import { RelativeDate } from './FiltersForm.bs.js'
