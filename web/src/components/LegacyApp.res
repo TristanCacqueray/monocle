@@ -10,7 +10,7 @@ module ChangesReviewStats = {
     let query = Legacy.Query.mkQueryParams(
       "changes_review_stats",
       "changes_review_stats",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -39,7 +39,7 @@ module ChangesLifeCycleStats = {
     let query = Legacy.Query.mkQueryParams(
       "changes_lifecycle_stats",
       "changes_lifecycle_stats",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -66,7 +66,7 @@ module AuthorsHistoStats = {
     let query = Legacy.Query.mkQueryParams(
       "authors_histo_stats",
       "authors_histo_stats",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -94,7 +94,7 @@ module MostActiveAuthorsStats = {
     let query = Legacy.Query.mkQueryParams(
       "most_active_authors_stats",
       "most_active_authors_stats",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -122,7 +122,7 @@ module MostReviewedAuthorsStats = {
     let query = Legacy.Query.mkQueryParams(
       "most_reviewed_authors_stats",
       "most_reviewed_authors_stats",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -149,7 +149,7 @@ module AuthorsPeersStats = {
     let query = Legacy.Query.mkQueryParams(
       "peers_exchange_strength",
       "authors_peers_stats",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -176,7 +176,7 @@ module NewContributorsStats = {
     let query = Legacy.Query.mkQueryParams(
       "new_contributors",
       "new_contributors",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -203,7 +203,7 @@ module Repos = {
     let query = Legacy.Query.mkQueryParams(
       "repos_summary",
       "repos_summary",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -234,7 +234,7 @@ module Changes = {
     let query = Legacy.Query.mkQueryParams(
       "last_changes",
       "last_changes",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -261,7 +261,7 @@ module ChangesAuthorsPie = {
     let query = Legacy.Query.mkQueryParams(
       "authors_top",
       "authors_top",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -288,7 +288,7 @@ module ChangesReposPie = {
     let query = Legacy.Query.mkQueryParams(
       "repos_top",
       "repos_top",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -315,7 +315,7 @@ module ChangesApprovalsPie = {
     let query = Legacy.Query.mkQueryParams(
       "approvals_top",
       "approvals_top",
-      false,
+      "",
       false,
       state.legacyQuery,
       state.index,
@@ -327,6 +327,33 @@ module ChangesApprovalsPie = {
       state.changesApprovalsPie,
       () => Legacy.ChangesApprovalsPie.get(query),
       res => Store.FetchChangesApprovalsPie(res),
+      dispatch,
+    )
+  }
+}
+
+module Change = {
+  module View = {
+    @react.component @module("./change.jsx")
+    external make: (~index: string, ~data: Legacy.Change.t) => React.element = "CChange"
+  }
+
+  let fetch = (change: string, (state: Store.t, dispatch)) => {
+    let query = Legacy.Query.mkQueryParams(
+      "changes_and_events",
+      "changes_and_events",
+      change,
+      true,
+      state.legacyQuery,
+      state.index,
+      0,
+      100,
+    )
+    Fetch.fetch(
+      query,
+      state.change,
+      () => Legacy.Change.get(query),
+      res => Store.FetchChange(res),
       dispatch,
     )
   }

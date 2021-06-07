@@ -16,8 +16,6 @@
 
 import React from 'react'
 
-import { connect } from 'react-redux'
-
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Card from 'react-bootstrap/Card'
@@ -27,7 +25,6 @@ import Button from 'react-bootstrap/Button'
 import Popover from 'react-bootstrap/Popover'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import PropTypes from 'prop-types'
-import { withRouter } from 'react-router-dom'
 
 import Interweave from 'interweave'
 import { UrlMatcher } from 'interweave-autolink'
@@ -35,12 +32,8 @@ import { UrlMatcher } from 'interweave-autolink'
 import moment from 'moment'
 
 import {
-  BaseQueryComponent,
-  LoadingBox,
   ErrorBox,
   addS,
-  mapDispatchToProps,
-  addMap,
   chooseApprovalBadgeStyle,
   ChangeStatus
 } from './common'
@@ -211,35 +204,6 @@ ChangeTable.propTypes = {
   index: PropTypes.string.isRequired
 }
 
-class Change extends BaseQueryComponent {
-  constructor(props) {
-    super(props)
-    this.state.name = 'changes_and_events'
-    this.state.graph_type = 'changes_and_events'
-    this.state.pageSize = 100
-    this.state.forceAllAuthors = true
-  }
-
-  render() {
-    if (!this.props.changes_and_events_loading) {
-      if (this.props.changes_and_events_error) {
-        return <ErrorBox error={this.props.changes_and_events_error} />
-      }
-      const data = this.props.changes_and_events_result
-      return <ChangeTable data={data} index={this.props.index} />
-    } else {
-      return <LoadingBox />
-    }
-  }
-}
-
-Change.propTypes = {
-  index: PropTypes.string.isRequired
-}
-
-const mapStateToProps = (state) =>
-  addMap({}, state.QueryReducer, 'changes_and_events')
-
-const CChange = withRouter(connect(mapStateToProps, mapDispatchToProps)(Change))
+const CChange = (data) => <ChangeTable data={data.data} index={data.index} />
 
 export { CChange }

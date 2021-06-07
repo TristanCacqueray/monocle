@@ -80,6 +80,19 @@ module ChangesView = {
   }
 }
 
+module ChangeView = {
+  open LegacyApp
+  @react.component
+  let make = (~change: string, ~store: Store.t) => {
+    let (state, _) = store
+    let index = state.index
+    switch Change.fetch(change, store) {
+    | Some(Ok(data)) => <div className="container"> <Change.View index data /> </div>
+    | _ => <Spinner />
+    }
+  }
+}
+
 module Main = {
   @react.component
   let make = () => {
@@ -139,6 +152,7 @@ module Main = {
           | list{_index, "people"} => <PeopleView store />
           | list{_index, "repos"} => <ReposView store />
           | list{_index, "changes"} => <ChangesView store />
+          | list{_index, "change", change} => <ChangeView store change />
           | list{_index, _} => <p> {("index: " ++ state.index)->str} </p>
           | _ => <p> {"Not found"->str} </p>
           }

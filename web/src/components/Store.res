@@ -25,7 +25,7 @@ module Legacy = {
     type t
 
     @module("./common.jsx")
-    external mkQueryParams: (string, string, bool, bool, string, string, int, int) => t =
+    external mkQueryParams: (string, string, string, bool, string, string, int, int) => t =
       "mkQueryParams"
   }
 
@@ -88,6 +88,11 @@ module Legacy = {
     type t
     @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
   }
+
+  module Change = {
+    type t
+    @module("../api.js") external get: Query.t => axios<t> = "getQueryResults"
+  }
 }
 
 module Store = {
@@ -106,6 +111,7 @@ module Store = {
   type changesAuthorsPieR = RemoteData.t<Legacy.ChangesAuthorsPie.t>
   type changesReposPieR = RemoteData.t<Legacy.ChangesReposPie.t>
   type changesApprovalsPieR = RemoteData.t<Legacy.ChangesApprovalsPie.t>
+  type changeR = RemoteData.t<Legacy.Change.t>
 
   type t = {
     index: string,
@@ -125,6 +131,7 @@ module Store = {
     changesAuthorsPie: changesAuthorsPieR,
     changesReposPie: changesReposPieR,
     changesApprovalsPie: changesApprovalsPieR,
+    change: changeR,
   }
   type action =
     | SetIndex(string)
@@ -144,6 +151,7 @@ module Store = {
     | FetchChangesAuthorsPie(changesAuthorsPieR)
     | FetchChangesReposPie(changesReposPieR)
     | FetchChangesApprovalsPie(changesApprovalsPieR)
+    | FetchChange(changeR)
   type dispatch = action => unit
 
   let reducer = (state: t, action: action) =>
@@ -182,6 +190,9 @@ module Store = {
     | FetchChangesAuthorsPie(res) => {...state, changesAuthorsPie: res}
     | FetchChangesReposPie(res) => {...state, changesReposPie: res}
     | FetchChangesApprovalsPie(res) => {...state, changesApprovalsPie: res}
+
+    // Single change view
+    | FetchChange(res) => {...state, change: res}
     }
 
   // TODO: replace static index with a SetIndex action, after the LegacyApp is removed
@@ -203,6 +214,7 @@ module Store = {
     changesAuthorsPie: None,
     changesReposPie: None,
     changesApprovalsPie: None,
+    change: None,
   }
 }
 
