@@ -31,25 +31,14 @@ import { UrlMatcher } from 'interweave-autolink'
 
 import moment from 'moment'
 
-import {
-  ErrorBox,
-  addS,
-  chooseApprovalBadgeStyle,
-  ChangeStatus
-} from './common'
+import { addS, chooseApprovalBadgeStyle, ChangeStatus } from './common'
 
 import TimelineGraph from './timeline'
 import CommitsTimelineGraph from './commits_timeline'
 
 class ChangeTable extends React.Component {
   render() {
-    if (!this.props.data || this.props.data.items.length === 0) {
-      return <ErrorBox error={{ status: 0, data: 'Invalid change' }} />
-    }
     const changes = this.props.data.items.filter((x) => x.type === 'Change')
-    if (changes.length === 0) {
-      return <ErrorBox error={{ status: 1, data: 'No change found' }} />
-    }
     const change = changes[0]
     const events = this.props.data.items.filter((x) => x.type !== 'Change')
     const popover = (

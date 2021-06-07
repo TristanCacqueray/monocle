@@ -20,7 +20,7 @@ import Col from 'react-bootstrap/Col'
 
 import PropTypes from 'prop-types'
 
-import { addUrlField, ErrorBox, hasSmallWidth } from './common'
+import { addUrlField, hasSmallWidth } from './common'
 
 import { Pie as BasePie } from 'react-chartjs-2'
 
@@ -107,58 +107,54 @@ class Pie extends React.Component {
 
   render() {
     const data = this.prepareDataSet(this.props.data)
-    if (!data) {
-      return <ErrorBox error="No data for Pie" />
-    } else {
-      return (
-        <React.Fragment>
-          <Row>
-            <Col>
-              <BasePie
-                getElementsAtEvent={(elems) => this.handleClick(this, elems)}
-                // on small screen the legend takes the whole height so detect and adjust
-                height={hasSmallWidth() ? 300 : 200}
-                options={{
-                  legend: {
-                    display: false
-                  }
-                }}
-                data={data}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              {data.labels.map((label, index) => (
-                <Row key={index}>
-                  <Col sm={2}></Col>
-                  <Col>
-                    <span
-                      key={label}
-                      id={label}
-                      style={this.getLabelBoxStyle(
-                        data.datasets[0].backgroundColor,
-                        index
-                      )}
-                    >
-                      &nbsp;
-                    </span>
-                    <span>&nbsp;</span>
-                    <span
-                      style={this.getLabelStyle(label)}
-                      onClick={(e) => this.handleLegendClick(label)}
-                      id={label}
-                    >
-                      {label}
-                    </span>
-                  </Col>
-                </Row>
-              ))}
-            </Col>
-          </Row>
-        </React.Fragment>
-      )
-    }
+    return (
+      <React.Fragment>
+        <Row>
+          <Col>
+            <BasePie
+              getElementsAtEvent={(elems) => this.handleClick(this, elems)}
+              // on small screen the legend takes the whole height so detect and adjust
+              height={hasSmallWidth() ? 300 : 200}
+              options={{
+                legend: {
+                  display: false
+                }
+              }}
+              data={data}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            {data.labels.map((label, index) => (
+              <Row key={index}>
+                <Col sm={2}></Col>
+                <Col>
+                  <span
+                    key={label}
+                    id={label}
+                    style={this.getLabelBoxStyle(
+                      data.datasets[0].backgroundColor,
+                      index
+                    )}
+                  >
+                    &nbsp;
+                  </span>
+                  <span>&nbsp;</span>
+                  <span
+                    style={this.getLabelStyle(label)}
+                    onClick={(e) => this.handleLegendClick(label)}
+                    id={label}
+                  >
+                    {label}
+                  </span>
+                </Col>
+              </Row>
+            ))}
+          </Col>
+        </Row>
+      </React.Fragment>
+    )
   }
 }
 

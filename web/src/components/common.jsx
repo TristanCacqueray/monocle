@@ -25,7 +25,6 @@ import Spinner from 'react-bootstrap/Spinner'
 import PropTypes from 'prop-types'
 import Link from './LegacyLink.bs.js'
 
-import { query } from '../reducers/query'
 import { RelativeDate } from './FiltersForm.bs.js'
 
 function getWindowDimensions() {
@@ -73,19 +72,6 @@ function addS(count, s = 's') {
     return s
   } else {
     return ''
-  }
-}
-
-function addMap(dict, reducer, name) {
-  dict[name + '_loading'] = reducer[name + '_loading']
-  dict[name + '_result'] = reducer[name + '_result']
-  dict[name + '_error'] = reducer[name + '_error']
-  return dict
-}
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    handleQuery: (params) => dispatch(query(params))
   }
 }
 
@@ -175,51 +161,6 @@ ChangeStatus.propTypes = {
   data: PropTypes.object
 }
 
-class LoadingBox extends React.Component {
-  render() {
-    return (
-      <Row>
-        <Col>
-          <Card>
-            <Card.Body>
-              <Spinner animation="border" role="status" />{' '}
-              <span>Loading...</span>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    )
-  }
-}
-
-class ErrorBox extends React.Component {
-  render() {
-    const style = { textAlign: 'center' }
-    return (
-      <Row>
-        <Col>
-          <Card>
-            <Card.Body>
-              <p style={style}>
-                Error: code:{' '}
-                {this.props.error ? this.props.error.status : 'none'}, message:{' '}
-                {this.props.error ? this.props.error.data : 'none'}
-              </p>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    )
-  }
-}
-
-ErrorBox.propTypes = {
-  error: PropTypes.shape({
-    status: PropTypes.number.isRequired,
-    data: PropTypes.string.isRequired
-  })
-}
-
 class SmallSizeWarning extends React.Component {
   render() {
     const { width } = getWindowDimensions()
@@ -238,62 +179,6 @@ class SmallSizeWarning extends React.Component {
           ''
         )}
       </React.Fragment>
-    )
-  }
-}
-
-class BaseQueryComponent extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      pathname: null,
-      name: null, // must be set by sub-class
-      graph_type: null, // must be set by sub-class
-      pageSize: 10,
-      selectedPage: 0,
-      forceAllAuthors: false, // could be set by sub-class
-      state: null // could be set by sub-class
-    }
-    this.handlePageChange.bind(this)
-    this.queryBackend.bind(this)
-  }
-
-  componentDidMount() {
-    this.setState({ pathname: window.location.pathname })
-    this.queryBackend(this.state.selectedPage)
-    this.unlisten = this.props.history.listen((location, action) => {
-      // send a query only when the filter has changed parameters and
-      // we are still on the same page
-      if (this.state.pathname === location.pathname) {
-        this.queryBackend()
-      }
-    })
-  }
-
-  componentWillUnmount() {
-    if (this.unlisten) {
-      this.unlisten()
-    }
-  }
-
-  handlePageChange(obj, pageData) {
-    obj.setState({ selectedPage: pageData.selected })
-    obj.queryBackend(pageData.selected)
-  }
-
-  queryBackend(start = 0) {
-    this.setState({ state: params.get('state') })
-    this.props.handleQuery(
-      mkQueryParams(
-        this.state.name,
-        this.state.graph_type,
-        this.props.changeIds,
-        this.state.forceAllAuthors,
-        new URL(window.location.href).search,
-        this.props.index,
-        start,
-        this.state.pageSize
-      )
     )
   }
 }
@@ -379,30 +264,12 @@ const mkQueryParams = (
   return queryParams
 }
 
-BaseQueryComponent.propTypes = {
-  index: PropTypes.string.isRequired,
-  filter_repository: PropTypes.string,
-  filter_gte: PropTypes.string,
-  filter_lte: PropTypes.string,
-  filter_authors: PropTypes.string,
-  filter_exclude_authors: PropTypes.string,
-  filter_loaded_from_url: PropTypes.bool,
-  handleQuery: PropTypes.func.isRequired,
-  changeIds: PropTypes.string,
-  history: PropTypes.object.isRequired
-}
-
 export {
   mkQueryParams,
-  LoadingBox,
-  ErrorBox,
-  BaseQueryComponent,
   changeUrl,
   addUrlField,
   indexUrl,
   addS,
-  addMap,
-  mapDispatchToProps,
   chooseApprovalBadgeStyle,
   getWindowDimensions,
   SmallSizeWarning,
