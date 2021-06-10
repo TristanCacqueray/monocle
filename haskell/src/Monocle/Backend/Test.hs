@@ -1,15 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 -- |
 module Monocle.Backend.Test where
 
 import Control.Exception (bracket)
-import Data.Time.Clock (UTCTime)
+import Control.Monad.Random.Lazy
+import qualified Data.Text as Text
+import Data.Time.Clock (UTCTime (..), addUTCTime, secondsToNominalDiffTime)
+import Data.Time.Format (defaultTimeLocale, formatTime)
 import qualified Database.Bloodhound as BH
 import Monocle.Backend.Documents
 import qualified Monocle.Backend.Index as I
 import Relude
+import Relude.Unsafe ((!!))
 import Test.Tasty.HUnit
 
 fakeDate :: UTCTime
@@ -129,3 +135,83 @@ testIndexChange = withBH doTest
         (toText (elkchangeTitle fakeChange2))
     fakeChange1 = mkFakeChange 1 "My change 1"
     fakeChange2 = mkFakeChange 2 "My change 2"
+
+-- Tests scenario helpers
+
+-- $setup
+-- >>> import Data.Time.Clock
+-- >>> let now = fromMaybe (error "") (readMaybe "2021-06-10 01:21:03Z")
+
+-- | 'randomAuthor' returns a random element of the given list
+randomAuthor :: (MonadRandom m) => [a] -> m a
+randomAuthor xs = do
+  let n = length xs
+  i <- getRandomR (0, n -1)
+  return (xs !! i)
+
+emptyChange :: ELKChange
+emptyChange = fakeChange
+
+showEvents :: [ScenarioEvent] -> Text
+showEvents xs = Text.intercalate ", " (map go xs)
+  where
+    author = toStrict . authorMuid
+    date = toText . formatTime defaultTimeLocale "%Y-%m-%d"
+    go ev = case ev of
+      SCreation ELKChange {..} ->
+        ("Change[" <> date elkchangeCreatedAt <> " ")
+          <> (elkchangeChangeId <> " created by " <> author elkchangeAuthor)
+          <> "]"
+      SReview ELKChangeReviewedEvent {..} -> "Reviewed[" <> author elkreviewAuthor <> "]"
+      SMerge ELKChangeMergedEvent {..} -> "Merged[" <> date elkmergeDate <> "]"
+
+-- Tests scenario data types
+
+-- | 'ScenarioProject' is a data type to define a project for a scenario.
+data ScenarioProject = SProject
+  { name :: Text,
+    maintainers :: [Author],
+    contributors :: [Author]
+  }
+
+-- | 'ScenarioEvent' is a type of event generated for a given scenario.
+data ScenarioEvent
+  = SCreation ELKChange
+  | SReview ELKChangeReviewedEvent
+  | SMerge ELKChangeMergedEvent
+
+-- | 'nominalMerge' is the most simple scenario
+--
+-- >>> let project = SProject "openstack/nova" [Author "alice", Author "bob"] [Author "eve"]
+-- >>> showEvents $ nominalMerge project now (3600*24)
+-- "Change[2021-06-10 change-2218 created by eve], Reviewed[alice], Merged[2021-06-11]"
+nominalMerge :: ScenarioProject -> UTCTime -> Integer -> [ScenarioEvent]
+nominalMerge SProject {..} start duration = evalRand scenario stdGen
+  where
+    -- The random number generator is based on the name
+    stdGen = mkStdGen (Text.length name)
+
+    scenario = do
+      -- The base change
+      changeId <- getRandomR (1000, 9999)
+      let changeIdText = "change-" <> show @Text @Int changeId
+
+      -- The change creation
+      author <- randomAuthor contributors
+      let change =
+            emptyChange
+              { elkchangeAuthor = author,
+                elkchangeCreatedAt = start,
+                elkchangeChangeId = changeIdText
+              }
+
+      -- The review
+      reviewer <- randomAuthor maintainers
+      let review = ELKChangeReviewedEvent changeIdText reviewer
+
+      -- The change merged event
+      let date = addUTCTime (secondsToNominalDiffTime (fromInteger duration)) start
+          merge = ELKChangeMergedEvent changeIdText date
+
+      -- The event lists
+      pure [SCreation change, SReview review, SMerge merge]

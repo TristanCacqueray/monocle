@@ -114,3 +114,29 @@ instance ToJSON ELKChange where
 
 instance FromJSON ELKChange where
   parseJSON = genericParseJSON $ aesonPrefix snakeCase
+
+-- | The review document
+data ELKChangeReviewedEvent = ELKChangeReviewedEvent
+  { elkreviewId :: Text,
+    elkreviewAuthor :: Author
+  }
+  deriving (Show, Eq, Generic)
+
+instance ToJSON ELKChangeReviewedEvent where
+  toJSON = genericToJSON $ aesonPrefix snakeCase
+
+instance FromJSON ELKChangeReviewedEvent where
+  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+
+-- | The merge document
+data ELKChangeMergedEvent = ELKChangeMergedEvent
+  { elkmergeId :: Text,
+    elkmergeDate :: UTCTime
+  }
+  deriving (Show, Eq, Generic)
+
+instance ToJSON ELKChangeMergedEvent where
+  toJSON = genericToJSON $ aesonPrefix snakeCase
+
+instance FromJSON ELKChangeMergedEvent where
+  parseJSON = genericParseJSON $ aesonPrefix snakeCase
