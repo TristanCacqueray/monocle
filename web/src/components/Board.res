@@ -352,7 +352,7 @@ module Board = {
 
       let bottomRow =
         <>
-          <SearchToolTip store />
+          <HelpSearch.Tooltip />
           <Patternfly.Button
             onClick={_ => {
               doSave()
