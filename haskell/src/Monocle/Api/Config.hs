@@ -25,16 +25,16 @@ Dhall.TH.makeHaskellTypes
      in [ main "Project",
           main "Ident",
           main "SearchAlias",
+          main "Crawler",
           provider "Gerrit",
           provider "Gitlab",
           provider "Github",
           provider "Bugzilla",
           Dhall.TH.MultipleConstructors
             "Provider"
-            "./dhall-monocle/Monocle/Lentille/Provider.dhall",
+            "./dhall-monocle/Monocle/Crawler/Provider.dhall",
           -- To support backward compatible schema, we replace Index and Crawler schemas
           Dhall.TH.SingleConstructor "Index" "Index" $ mainPath "Tenant",
-          Dhall.TH.SingleConstructor "Crawler" "Crawler" $ mainPath "Lentille",
           Dhall.TH.SingleConstructor "Config" "Config" "./dhall-monocle/Monocle/Config.dhall"
         ]
   )
@@ -117,7 +117,7 @@ lookupProject Index {..} projectName = find isProject (fromMaybe [] projects)
     isProject Project {..} = name == projectName
 
 lookupCrawler :: Index -> Text -> Maybe Crawler
-lookupCrawler Index {..} crawlerName = find isProject (fromMaybe [] crawlers)
+lookupCrawler Index {..} crawlerName = find isProject crawlers
   where
     isProject Crawler {..} = name == crawlerName
 
@@ -158,8 +158,8 @@ getCrawlerOrganization Crawler {..} = case provider of
 
 emptyTenant :: Text -> [Ident] -> Index
 emptyTenant name idents' =
-  let crawlers_api_key = Nothing
-      crawlers = Nothing
+  let crawlers_api_key = ""
+      crawlers = []
       projects = Nothing
       idents = Just idents'
       search_aliases = Nothing

@@ -76,8 +76,8 @@ fakeChange =
 
 emptyConfig :: Text -> Config.Index
 emptyConfig name =
-  let crawlers_api_key = Nothing
-      crawlers = Nothing
+  let crawlers_api_key = ""
+      crawlers = []
       projects = Nothing
       idents = Nothing
       search_aliases = Nothing

@@ -19,10 +19,10 @@ instance MacroM IO
 getCrawlers :: [Config.Index] -> [(Text, Text, Config.Crawler, [Config.Ident])]
 getCrawlers xs = do
   index <- xs
-  crawler <- fromMaybe [] (Config.crawlers index)
+  crawler <- Config.crawlers index
   let idents = fromMaybe [] (Config.idents index)
   let name = Config.index index
-      key = fromMaybe (error "Api key is missing") (Config.crawlers_api_key index)
+      key = Config.crawlers_api_key index
   pure (name, key, crawler, idents)
 
 crawlerName :: Config.Crawler -> Text
