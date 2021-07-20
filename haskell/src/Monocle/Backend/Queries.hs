@@ -87,8 +87,8 @@ changeReviewRatio = do
   let total, commitCountF, reviewCountF :: Float
       total = reviewCountF + commitCountF
       reviewCountF = fromIntegral $ reviewCount + commentCount
-      commitCountF = fromIntegral $ commitCount
-  pure (reviewCountF * 100 / total)
+      commitCountF = fromIntegral commitCount
+  pure (commitCountF * 100 / total)
 
 mkAnd :: [BH.Query] -> BH.Query
 mkAnd andQ = BH.QueryBoolQuery $ BH.mkBoolQuery andQ [] [] []
