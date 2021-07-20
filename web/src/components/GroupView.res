@@ -50,7 +50,6 @@ module RowItem = {
   @react.component
   let make = (~user: UserGroupTypes.user_stat) => {
     let stat = user.stat->Belt.Option.getExn
-    Js.log(stat)
     <tr role="row">
       <td role="cell"> {user.name->str} </td>
       <td role="cell">
@@ -61,10 +60,26 @@ module RowItem = {
         />
       </td>
       <td role="cell">
-        {stat.review_histo
-        ->Belt.List.mapWithIndex((index, bucket) => <HistoBox bucket key={index->string_of_int} />)
-        ->Belt.List.toArray
-        ->React.array}
+        <Layout.Grid>
+          <Layout.GridItem md=Column._1> {"Commits: "->str} </Layout.GridItem>
+          <Layout.GridItem md=Column._11>
+            {stat.commit_histo
+            ->Belt.List.mapWithIndex((index, bucket) =>
+              <HistoBox bucket key={index->string_of_int} />
+            )
+            ->Belt.List.toArray
+            ->React.array}
+          </Layout.GridItem>
+          <Layout.GridItem md=Column._1> {"Review: "->str} </Layout.GridItem>
+          <Layout.GridItem md=Column._11>
+            {stat.review_histo
+            ->Belt.List.mapWithIndex((index, bucket) =>
+              <HistoBox bucket key={index->string_of_int} />
+            )
+            ->Belt.List.toArray
+            ->React.array}
+          </Layout.GridItem>
+        </Layout.Grid>
       </td>
     </tr>
   }
