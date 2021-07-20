@@ -6,9 +6,16 @@
 
 open Prelude
 
+type t = Commit | Review
+
 module HistoBox = {
   @react.component
-  let make = (~bucket: UserGroupTypes.review_histo) => {
+  let make = (
+    ~bucket: UserGroupTypes.review_histo,
+    ~store: Store.t,
+    ~author: string,
+    ~field: t,
+  ) => {
     let count = bucket.count->Int32.to_int->Belt.Int.toFloat
     let countStr = switch bucket.count->Int32.to_int {
     | 0 => ""
@@ -21,6 +28,7 @@ module HistoBox = {
       ~height="20px",
       ~display="inline-block",
       ~border="1px solid black",
+      ~color="black",
       ~margin="2px",
       ~borderRadius="5px",
       ~overflow="hidden",
@@ -28,8 +36,29 @@ module HistoBox = {
       ~backgroundColor="rgba(0, " ++ string_of_int(green) ++ ", 0, " ++ string_of_int(alpha) ++ ")",
       (),
     )
-    let date = bucket.date->Int64.to_float->Js.Date.fromFloat->Js.Date.toDateString
-    <Tooltip content={date->str}> <span style> {countStr->str} </span> </Tooltip>
+
+    let date = bucket.date->Int64.to_float->Js.Date.fromFloat
+    let dateStr = date->Js.Date.toDateString
+    let fromDate = (date->Js.Date.toISOString |> Js.String.split("T"))->Js.Array.unsafe_get(0)
+    let nextDate =
+      ((bucket.date->Int64.to_float +. 86401000.0)->Js.Date.fromFloat->Js.Date.toISOString
+        |> Js.String.split("T"))->Js.Array.unsafe_get(0)
+    let box = <span style> {countStr->str} </span>
+
+    let (state, dispatch) = store
+    let filter =
+      "author:\"" ++ author ++ "\" and updated_at>" ++ fromDate ++ " and updated_at<" ++ nextDate
+    let onClick = _ => filter->Store.Store.SetFilter->dispatch
+
+    <Tooltip content={dateStr->str}>
+      {switch field {
+      | Commit if bucket.count->Int32.to_int > 0 =>
+        <Link onClick _to={"/" ++ state.index ++ "/changes?q=" ++ state.query ++ "&f=" ++ filter}>
+          {box}
+        </Link>
+      | _ => box
+      }}
+    </Tooltip>
   }
 }
 
@@ -48,7 +77,7 @@ module RowItem = {
       </thead>
   }
   @react.component
-  let make = (~user: UserGroupTypes.user_stat) => {
+  let make = (~user: UserGroupTypes.user_stat, ~store: Store.t) => {
     let stat = user.stat->Belt.Option.getExn
     <tr role="row">
       <td role="cell"> {user.name->str} </td>
@@ -65,7 +94,7 @@ module RowItem = {
           <Layout.GridItem md=Column._11>
             {stat.commit_histo
             ->Belt.List.mapWithIndex((index, bucket) =>
-              <HistoBox bucket key={index->string_of_int} />
+              <HistoBox bucket key={index->string_of_int} store author={user.name} field={Commit} />
             )
             ->Belt.List.toArray
             ->React.array}
@@ -74,7 +103,7 @@ module RowItem = {
           <Layout.GridItem md=Column._11>
             {stat.review_histo
             ->Belt.List.mapWithIndex((index, bucket) =>
-              <HistoBox bucket key={index->string_of_int} />
+              <HistoBox bucket key={index->string_of_int} author={user.name} store field={Review} />
             )
             ->Belt.List.toArray
             ->React.array}
@@ -87,12 +116,12 @@ module RowItem = {
 
 module GroupTable = {
   @react.component
-  let make = (~group: UserGroupTypes.get_response) => {
+  let make = (~group: UserGroupTypes.get_response, ~store: Store.t) => {
     <table className="pf-c-table pf-m-compact pf-m-grid-md" role="grid">
       <RowItem.Head />
       <tbody role="rowgroup">
         {group.users
-        ->Belt.List.mapWithIndex((idx, user) => <RowItem key={string_of_int(idx)} user />)
+        ->Belt.List.mapWithIndex((idx, user) => <RowItem key={string_of_int(idx)} user store />)
         ->Belt.List.toArray
         ->React.array}
       </tbody>
@@ -110,7 +139,7 @@ let make = (~group: string, ~store: Store.t) => {
       {switch useAutoGetOn(() => WebApi.UserGroup.get(request), state.query) {
       | None => <Spinner />
       | Some(Error(title)) => <Alert variant=#Danger title />
-      | Some(Ok(group)) => <GroupTable group />
+      | Some(Ok(group)) => <GroupTable group store />
       }}
     </MStackItem>
   </MStack>
