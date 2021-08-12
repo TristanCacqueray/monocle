@@ -264,6 +264,10 @@ let
       (pkgs.haskell.lib.overrideCabal super.range-set-list { broken = false; });
     proto3-suite = pkgs.haskell.lib.dontCheck super.proto3-suite;
 
+    aeson = pkgs.haskell.lib.overrideCabal super.aeson {
+      configureFlags = [ "-fcffi" ];
+    };
+
     # relude>1 featuer exposed modules
     relude = pkgs.haskell.lib.overrideCabal super.relude {
       version = "1.0.0.1";

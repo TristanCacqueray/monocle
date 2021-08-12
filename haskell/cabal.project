@@ -6,3 +6,6 @@ source-repository-package
 
 packages: .
 write-ghc-environment-files: always
+
+package aeson
+  flags: +cffi
