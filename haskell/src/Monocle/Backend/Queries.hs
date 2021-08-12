@@ -360,8 +360,14 @@ firstEventOnChanges :: QueryM [FirstEvent]
 firstEventOnChanges = withFlavor (QueryFlavor Author CreatedAt) $ do
   (minDate, _) <- Q.queryBounds <$> getQuery
 
+  let rq =
+        BH.QueryRangeQuery $
+          BH.mkRangeQuery
+            (BH.FieldName (rangeField OnCreatedAt))
+            (BH.RangeDateGte (BH.GreaterThanEqD minDate))
+
   -- Collect all the events
-  result <- doScan 10000
+  result <- withFilter [rq] $ doScan 10000
 
   -- Group by change_id
   let changeMap :: [NonEmpty ELKChangeEvent]
