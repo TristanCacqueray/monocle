@@ -1,8 +1,12 @@
+{-# LANGUAGE StrictData #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 -- | Data types for ELK documents
 module Monocle.Backend.Documents where
 
-import Data.Aeson (FromJSON, ToJSON, Value (String), genericParseJSON, genericToJSON, parseJSON, toJSON, withText)
+import Data.Aeson (FromJSON, ToJSON, Value (String), parseJSON, toJSON, withText)
 import Data.Aeson.Casing (aesonPrefix, snakeCase)
+import Data.Aeson.TH
 import Data.Time.Clock (UTCTime)
 import Relude
 
@@ -12,11 +16,7 @@ data Author = Author
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON Author where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON Author where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''Author)
 
 data File = File
   { fileAdditions :: Word32,
@@ -25,22 +25,14 @@ data File = File
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON File where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON File where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''File)
 
 newtype SimpleFile = SimpleFile
   { simplefilePath :: LText
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON SimpleFile where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON SimpleFile where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''SimpleFile)
 
 data Commit = Commit
   { elkcommitSha :: LText,
@@ -54,11 +46,7 @@ data Commit = Commit
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON Commit where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON Commit where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''Commit)
 
 -- TODO: Replace by the existing Monocle.TaskData.NewTaskData
 data TaskData = TaskData
@@ -75,11 +63,7 @@ data TaskData = TaskData
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON TaskData where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON TaskData where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''TaskData)
 
 data ELKChangeState
   = ElkChangeOpen
@@ -188,11 +172,7 @@ data ELKChange = ELKChange
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON ELKChange where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON ELKChange where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''ELKChange)
 
 data ELKChangeEvent = ELKChangeEvent
   { elkchangeeventId :: LText,
@@ -213,11 +193,7 @@ data ELKChangeEvent = ELKChangeEvent
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON ELKChangeEvent where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON ELKChangeEvent where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''ELKChangeEvent)
 
 data ELKCrawlerMetadataObject = ELKCrawlerMetadataObject
   { elkcmCrawlerName :: LText,
@@ -227,19 +203,11 @@ data ELKCrawlerMetadataObject = ELKCrawlerMetadataObject
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON ELKCrawlerMetadataObject where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON ELKCrawlerMetadataObject where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''ELKCrawlerMetadataObject)
 
 newtype ELKCrawlerMetadata = ELKCrawlerMetadata
   { elkcmCrawlerMetadata :: ELKCrawlerMetadataObject
   }
   deriving (Show, Eq, Generic)
 
-instance ToJSON ELKCrawlerMetadata where
-  toJSON = genericToJSON $ aesonPrefix snakeCase
-
-instance FromJSON ELKCrawlerMetadata where
-  parseJSON = genericParseJSON $ aesonPrefix snakeCase
+$(deriveJSON (aesonPrefix snakeCase) ''ELKCrawlerMetadata)
