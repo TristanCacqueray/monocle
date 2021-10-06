@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 -- | Data types for Elasticsearch documents
 module Monocle.Backend.Documents where
 
@@ -6,6 +8,8 @@ import Data.Aeson.Casing (aesonPrefix, snakeCase)
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (defaultTimeLocale, formatTime, parseTimeM)
 import Relude
+import Waargonaut.Extras
+import qualified Waargonaut.Generic (Generic)
 
 data Author = Author
   { authorMuid :: LText,
@@ -317,3 +321,33 @@ instance ToJSON ECrawlerMetadata where
 
 instance FromJSON ECrawlerMetadata where
   parseJSON = genericParseJSON $ aesonPrefix snakeCase
+
+-- waargonaut
+instance Waargonaut.Generic.Generic Author
+
+instance HasDatatypeInfo Author
+
+instance JsonDecode GWaarg Author where
+  mkDecoder = gDecoder (defaultOpts {_optionsFieldName = trimPrefixLowerFirst "author"})
+
+-- file
+instance Waargonaut.Generic.Generic File
+
+instance HasDatatypeInfo File
+
+instance JsonDecode GWaarg File where
+  mkDecoder = gDecoder (defaultOpts {_optionsFieldName = trimPrefixLowerFirst "file"})
+
+instance Waargonaut.Generic.Generic SimpleFile
+
+instance HasDatatypeInfo SimpleFile
+
+instance JsonDecode GWaarg SimpleFile where
+  mkDecoder = gDecoder (defaultOpts {_optionsFieldName = trimPrefixLowerFirst "simplefile"})
+
+instance Waargonaut.Generic.Generic Commit
+
+instance HasDatatypeInfo Commit
+
+instance JsonDecode GWaarg Commit where
+  mkDecoder = gDecoder (defaultOpts {_optionsFieldName = trimPrefixLowerFirst "commit"})

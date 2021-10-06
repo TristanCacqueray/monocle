@@ -30,6 +30,23 @@ let
             });
           proto3-suite = pkgs.haskell.lib.dontCheck hpPrev.proto3-suite;
 
+          # Unbreak waargonaut
+          waargonaut = pkgs.haskell.lib.dontCheck
+            (pkgs.haskell.lib.overrideCabal hpPrev.waargonaut {
+              broken = false;
+              src = builtins.fetchGit {
+                url = "https://github.com/haskell-waargonaut/waargonaut";
+                ref = "master";
+                rev = "45ab23d8c505abc7c25cb97d71c6291748a0f1a4";
+              };
+            });
+          hw-json-simd = pkgs.haskell.lib.dontCheck
+            (pkgs.haskell.lib.overrideCabal hpPrev.hw-json-simd {
+              broken = false;
+            });
+          natural = pkgs.haskell.lib.dontCheck
+            (pkgs.haskell.lib.overrideCabal hpPrev.natural { broken = false; });
+
           text-time = (pkgs.haskell.lib.overrideCabal hpPrev.text-time {
             broken = false;
             src = builtins.fetchGit {

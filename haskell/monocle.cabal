@@ -148,6 +148,7 @@ library
                      , transformers
                      , unliftio-core
                      , vector                     < 0.13
+                     , waargonaut
                      , wai                        ^>= 3.2.3
                      , wai-cors                   ^>= 0.2
                      , wai-logger                 ^>= 2.3
@@ -204,6 +205,7 @@ library
 
                      -- Fast json helpers
                      , Json.Extras
+                     , Waargonaut.Extras
 
                      -- Codegen
                      , Monocle.Change
