@@ -11,6 +11,7 @@ module Monocle.Prelude
     getExn,
     getEnv',
     headMaybe,
+    Secret (..),
 
     -- * witch
     From (..),
@@ -140,6 +141,9 @@ import Streaming.Prelude (Stream)
 import qualified Streaming.Prelude as S
 import Test.Tasty.HUnit
 import Witch hiding (over)
+
+newtype Secret = Secret {unSecret :: Text}
+  deriving newtype (Hashable)
 
 eitherParseUTCTime :: String -> Either String UTCTime
 eitherParseUTCTime x = maybe (Left ("Failed to parse time " <> x)) Right (readMaybe (x <> " Z"))

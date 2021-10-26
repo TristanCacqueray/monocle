@@ -91,7 +91,7 @@ runMacroscope' verbose confPath interval client = do
           auth <- case gerrit_login of
             Just login -> do
               passwd <- Config.mGetSecret "GERRIT_PASSWORD" gerrit_password
-              pure $ Just (login, passwd)
+              pure $ Just (login, unSecret passwd)
             Nothing -> pure Nothing
           gClient <- getGerritClient gerrit_url auth
           let gerritEnv = GerritCrawler.getGerritEnv gClient gerrit_prefix $ Just getIdentByAliasCB
@@ -100,7 +100,7 @@ runMacroscope' verbose confPath interval client = do
               <> [gerritChangesCrawler gerritEnv | isJust gerrit_repositories]
         Config.BugzillaProvider Config.Bugzilla {..} -> do
           bzTokenT <- Config.mGetSecret "BUGZILLA_TOKEN" bugzilla_token
-          bzClient <- getBugzillaSession bugzilla_url $ Just $ getApikey bzTokenT
+          bzClient <- getBugzillaSession bugzilla_url $ Just $ getApikey (unSecret bzTokenT)
           pure [bzCrawler bzClient]
         Config.GithubProvider ghCrawler -> do
           let Config.Github _ _ github_token github_url = ghCrawler
