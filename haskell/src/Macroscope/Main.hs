@@ -3,6 +3,7 @@ module Macroscope.Main (runMacroscope) where
 
 import Control.Exception.Safe (tryAny)
 import qualified Data.Text as T
+import Gerrit (GerritClient)
 import Lentille
 import Lentille.Bugzilla (BugzillaSession, MonadBZ, getApikey, getBZData, getBugzillaSession)
 import Lentille.Gerrit (MonadGerrit (..))
@@ -47,19 +48,54 @@ runMacroscope verbose confPath interval client = do
 
 type MonadMacro m = (MonadCatch m, MonadGerrit m, MonadBZ m, LentilleMonad m)
 
+-- | 'Clients' is a store for all the remote clients, indexed using their url/token
+data Clients = Clients
+  { clientsGerrit :: Map (Text, Maybe (Text, Secret)) GerritClient,
+    clientsBugzilla :: Map (Text, Secret) BugzillaSession,
+    clientsGraph :: Map (Text, Secret) GraphClient
+  }
+
+-- | Boilerplate function to retrieve a client from the store
+getClientGerrit :: MonadGerrit m => Text -> Maybe (Text, Secret) -> StateT Clients m GerritClient
+getClientGerrit url auth = do
+  clients <- gets clientsGerrit
+  (client, newClients) <- mapMutate clients (url, auth) $ lift $ getGerritClient url auth
+  modify $ \s -> s {clientsGerrit = newClients}
+  pure client
+
+-- | Boilerplate function to retrieve a client from the store
+getClientBZ :: MonadBZ m => Text -> Secret -> StateT Clients m BugzillaSession
+getClientBZ url token = do
+  clients <- gets clientsBugzilla
+  (client, newClients) <- mapMutate clients (url, token) $ lift $ getBugzillaSession url $ Just $ getApikey (unSecret token)
+  modify $ \s -> s {clientsBugzilla = newClients}
+  pure client
+
+-- | Boilerplate function to retrieve a client from the store
+getClientGraphQL :: MonadGraphQL m => Text -> Secret -> StateT Clients m GraphClient
+getClientGraphQL url token = do
+  clients <- gets clientsGraph
+  (client, newClients) <- mapMutate clients (url, token) $ lift $ newGraphClient url token
+  modify $ \s -> s {clientsGraph = newClients}
+  pure client
+
 runMacroscope' :: MonadMacro m => Bool -> FilePath -> Word32 -> MonocleClient -> m ()
 runMacroscope' verbose confPath interval client = do
   mLog $ Log Macroscope LogMacroStart
   config <- Config.mReloadConfig confPath
-  loop config
+  loop config (Clients mempty mempty mempty)
   where
-    loop config = do
+    loop config clients = do
       -- Reload config
       conf <- config
 
-      -- Crawl each index
+      -- Flatten each crawler from all workspaces
       let crawlerInfos = getCrawlers conf
-      streams <- traverse getStream crawlerInfos
+
+      -- Create the streams and update the client store
+      (streams, newClients) <- runStateT (traverse getStream crawlerInfos) clients
+
+      -- Crawl each index
       traverse_ safeCrawl $ zip crawlerInfos streams
 
       -- Pause
@@ -67,7 +103,7 @@ runMacroscope' verbose confPath interval client = do
       mThreadDelay interval_usec
 
       -- Loop again
-      loop config
+      loop config newClients
 
     interval_usec = fromInteger . toInteger $ interval * 1_000_000
     interval_sec :: Float
@@ -92,15 +128,15 @@ runMacroscope' verbose confPath interval client = do
       -- TODO: handle exceptions
       traverse_ runner docStreams
 
-    getStream :: MonadMacro m => CrawlerInfo -> m [DocumentStream m]
+    -- 'getStream' converts the crawler configuration into a stream
+    getStream :: MonadMacro m => CrawlerInfo -> StateT Clients m [DocumentStream m]
     getStream (CrawlerInfo _ _ crawler idents) = do
       -- Create document streams
       case Config.provider crawler of
         Config.GitlabProvider Config.Gitlab {..} -> do
-          -- TODO: the client may be created once for each api key
-          token <- Config.mGetSecret "GITLAB_TOKEN" gitlab_token
+          token <- lift $ Config.mGetSecret "GITLAB_TOKEN" gitlab_token
           glClient <-
-            newGraphClient
+            getClientGraphQL
               (fromMaybe "https://gitlab.com/api/graphql" gitlab_url)
               token
           pure $
@@ -108,24 +144,24 @@ runMacroscope' verbose confPath interval client = do
               -- Then we always index the projects
               <> [glMRCrawler glClient getIdentByAliasCB]
         Config.GerritProvider Config.Gerrit {..} -> do
-          auth <- case gerrit_login of
+          auth <- lift $ case gerrit_login of
             Just login -> do
               passwd <- Config.mGetSecret "GERRIT_PASSWORD" gerrit_password
-              pure $ Just (login, unSecret passwd)
+              pure $ Just (login, passwd)
             Nothing -> pure Nothing
-          gClient <- getGerritClient gerrit_url auth
+          gClient <- getClientGerrit gerrit_url auth
           let gerritEnv = GerritCrawler.getGerritEnv gClient gerrit_prefix $ Just getIdentByAliasCB
           pure $
             [gerritREProjectsCrawler gerritEnv | maybe False (not . null . gerritRegexProjects) gerrit_repositories]
               <> [gerritChangesCrawler gerritEnv | isJust gerrit_repositories]
         Config.BugzillaProvider Config.Bugzilla {..} -> do
-          bzTokenT <- Config.mGetSecret "BUGZILLA_TOKEN" bugzilla_token
-          bzClient <- getBugzillaSession bugzilla_url $ Just $ getApikey (unSecret bzTokenT)
+          bzToken <- lift $ Config.mGetSecret "BUGZILLA_TOKEN" bugzilla_token
+          bzClient <- getClientBZ bugzilla_url bzToken
           pure [bzCrawler bzClient]
         Config.GithubProvider ghCrawler -> do
           let Config.Github _ _ github_token github_url = ghCrawler
-          ghToken <- Config.mGetSecret "GITHUB_TOKEN" github_token
-          ghClient <- newGraphClient (fromMaybe "https://api.github.com/graphql" github_url) ghToken
+          ghToken <- lift $ Config.mGetSecret "GITHUB_TOKEN" github_token
+          ghClient <- getClientGraphQL (fromMaybe "https://api.github.com/graphql" github_url) ghToken
           pure [ghIssuesCrawler ghClient]
         Config.GithubApplicationProvider _ -> error "Not (yet) implemented"
         Config.TaskDataProvider -> pure [] -- This is a generic crawler, not managed by the macroscope
