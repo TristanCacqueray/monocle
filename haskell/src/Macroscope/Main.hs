@@ -46,7 +46,7 @@ runMacroscope verbose confPath interval client = do
     Left e -> error $ "Macroscope failed: " <> show e
     Right x -> pure x
 
-type MonadMacro m = (MonadCatch m, MonadGerrit m, MonadBZ m, LentilleMonad m)
+type MonadMacro m = (MonadCatch m, MonadGerrit m, MonadBZ m, LentilleMonad m, MonadError LentilleError m)
 
 -- | 'Clients' is a store for all the remote clients, indexed using their url/token
 data Clients = Clients

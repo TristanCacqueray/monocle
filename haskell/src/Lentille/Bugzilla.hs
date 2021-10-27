@@ -33,13 +33,17 @@ import qualified Web.Bugzilla.RedHat as BZ
 import Web.Bugzilla.RedHat.Search ((.&&.), (.==.))
 import qualified Web.Bugzilla.RedHat.Search as BZS
 
-class (MonadLog m, MonadRetry m, MonadError LentilleError m) => MonadBZ m where
+class (MonadLog m, MonadRetry m) => MonadBZ m where
   bzRequest :: FromJSON bugs => BugzillaSession -> BZ.Request -> m bugs
   newContext :: BZ.BugzillaServer -> m BZ.BugzillaContext
 
 instance MonadBZ LentilleM where
-  bzRequest req = liftIO . BZ.sendBzRequest req
-  newContext = liftIO . BZ.newBugzillaContext
+  bzRequest req = liftIO . bzRequest req
+  newContext = liftIO . newContext
+
+instance MonadBZ IO where
+  bzRequest = BZ.sendBzRequest
+  newContext = BZ.newBugzillaContext
 
 -------------------------------------------------------------------------------
 -- BugZilla system
