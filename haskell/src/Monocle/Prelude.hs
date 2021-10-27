@@ -10,6 +10,7 @@ module Monocle.Prelude
     orDie,
     getExn,
     getEnv',
+    setEnv,
     headMaybe,
     Secret (..),
 
@@ -143,6 +144,7 @@ import Say (sayErr)
 import Streaming (Of (..))
 import Streaming.Prelude (Stream)
 import qualified Streaming.Prelude as S
+import System.Environment (setEnv)
 import Test.Tasty.HUnit
 import Witch hiding (over)
 

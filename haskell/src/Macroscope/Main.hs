@@ -1,5 +1,5 @@
 -- |
-module Macroscope.Main (runMacroscope) where
+module Macroscope.Main (runMacroscope, getStream, getCrawlers, Clients (..)) where
 
 import Control.Exception.Safe (tryAny)
 import qualified Data.Text as T
@@ -23,6 +23,7 @@ data CrawlerInfo = CrawlerInfo
     cCrawler :: Config.Crawler,
     cIdents :: [Config.Ident]
   }
+  deriving (Eq, Show)
 
 -- | Utility function to create a flat list of crawler from the whole configuration
 getCrawlers :: [Config.Index] -> [CrawlerInfo]
@@ -55,6 +56,9 @@ data Clients = Clients
     clientsGraph :: Map (Text, Secret) GraphClient
   }
 
+instance From () Clients where
+  from _ = Clients mempty mempty mempty
+
 -- | Boilerplate function to retrieve a client from the store
 getClientGerrit :: MonadGerrit m => Text -> Maybe (Text, Secret) -> StateT Clients m GerritClient
 getClientGerrit url auth = do
@@ -83,7 +87,7 @@ runMacroscope' :: MonadMacro m => Bool -> FilePath -> Word32 -> MonocleClient ->
 runMacroscope' verbose confPath interval client = do
   mLog $ Log Macroscope LogMacroStart
   config <- Config.mReloadConfig confPath
-  loop config (Clients mempty mempty mempty)
+  loop config (from ())
   where
     loop config clients = do
       -- Reload config
@@ -128,9 +132,11 @@ runMacroscope' verbose confPath interval client = do
       -- TODO: handle exceptions
       traverse_ runner docStreams
 
-    -- 'getStream' converts the crawler configuration into a stream
-    getStream :: MonadMacro m => CrawlerInfo -> StateT Clients m [DocumentStream m]
-    getStream (CrawlerInfo _ _ crawler idents) = do
+-- 'getStream' converts the crawler configuration into a stream
+getStream :: MonadMacro m => CrawlerInfo -> StateT Clients m [DocumentStream m]
+getStream (CrawlerInfo _ _ crawler idents) = getStream'
+  where
+    getStream' =
       -- Create document streams
       case Config.provider crawler of
         Config.GitlabProvider Config.Gitlab {..} -> do
@@ -165,9 +171,8 @@ runMacroscope' verbose confPath interval client = do
           pure [ghIssuesCrawler ghClient]
         Config.GithubApplicationProvider _ -> error "Not (yet) implemented"
         Config.TaskDataProvider -> pure [] -- This is a generic crawler, not managed by the macroscope
-      where
-        getIdentByAliasCB :: Text -> Maybe Text
-        getIdentByAliasCB = flip Config.getIdentByAliasFromIdents idents
+    getIdentByAliasCB :: Text -> Maybe Text
+    getIdentByAliasCB = flip Config.getIdentByAliasFromIdents idents
 
     glMRCrawler :: MonadGraphQLE m => GraphClient -> (Text -> Maybe Text) -> DocumentStream m
     glMRCrawler glClient cb = Changes $ streamMergeRequests glClient cb
