@@ -132,6 +132,7 @@ let
     cd ${name}
   '';
 
+in rec {
   # DB
   info = pkgs.lib.splitString "-" pkgs.stdenv.hostPlatform.system;
   arch = pkgs.lib.elemAt info 0;
@@ -577,7 +578,6 @@ let
   all-req = codegen-req ++ hs-req ++ python-req ++ javascript-req ++ go-req
     ++ doc-req;
 
-in rec {
   # containers
   containerPrometheus = promContainer;
   containerGrafana = grafanaContainer;
