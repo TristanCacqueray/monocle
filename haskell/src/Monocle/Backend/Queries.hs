@@ -185,12 +185,12 @@ queryAggValue :: QueryMonad m => Value -> m Double
 queryAggValue search = getAggValue "agg1" <$> doAggregation search
   where
     getAggValue :: Text -> BH.AggregationResults -> Double
-    getAggValue key = getValue . parseAggregationResults key
+    getAggValue key' = getValue . parseAggregationResults key'
 
 -- | Extract a single aggregation result from the map
 parseAggregationResults :: (FromJSON a) => Text -> BH.AggregationResults -> a
-parseAggregationResults key res = getExn $ do
-  value <- Map.lookup key res `orDie` ("No value found for: " <> toString key)
+parseAggregationResults key' res = getExn $ do
+  value <- Map.lookup key' res `orDie` ("No value found for: " <> toString key')
   Aeson.parseEither Aeson.parseJSON value
 
 queryAggResult :: QueryMonad m => FromJSON a => Value -> m a

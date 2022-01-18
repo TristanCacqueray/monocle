@@ -274,15 +274,15 @@ encodePrettyWithSpace space =
 
 -- | An helper to mutate a map using a monadic value
 mapMutate :: (Ord k, Monad m) => Map k v -> k -> m v -> m (v, Map k v)
-mapMutate m key mkValue =
-  case Map.lookup key m of
+mapMutate m key' mkValue =
+  case Map.lookup key' m of
     Just value ->
       -- The value was found, just return it
       pure (value, m)
     Nothing -> do
       -- Create a new value, store and return it
       value <- mkValue
-      pure (value, Map.insert key value m)
+      pure (value, Map.insert key' value m)
 
 eitherParseUTCTime :: String -> Either String UTCTime
 eitherParseUTCTime x = maybe (Left ("Failed to parse time " <> x)) Right (readMaybe (x <> " Z"))
