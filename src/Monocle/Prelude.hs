@@ -76,6 +76,8 @@ module Monocle.Prelude (
   Stream,
   Of (..),
   toVector,
+  ListT,
+  streamingFromListT,
 
   -- * unliftio
   MonadUnliftIO,
@@ -253,6 +255,8 @@ import Relude.Extra.Group (groupBy)
 import Streaming (Of (..))
 import Streaming.Prelude (Stream)
 import Streaming.Prelude qualified as S
+import ListT (ListT)
+import ListT qualified as ListT
 import System.Environment (setEnv)
 import System.IO.Unsafe (unsafePerformIO)
 import Test.Tasty.HUnit
@@ -592,3 +596,11 @@ runErrorIO action = do
   case res of
     Left e -> error (show e)
     Right x -> pure x
+
+-- | ListT
+streamingFromListT :: Monad m => ListT m a -> Stream (Of a) m ()
+streamingFromListT = S.unfoldr go
+  where
+    go listT = do
+      res <- ListT.uncons listT
+      pure $ res `orDie` ()
